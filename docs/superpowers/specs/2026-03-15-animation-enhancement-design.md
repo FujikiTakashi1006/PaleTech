@@ -66,7 +66,7 @@ Header (fixed, backdrop blur — 変更なし)
 ### 1. Hero Section
 
 **ネットワークノードSVGアニメーション:**
-- 4-6個のノード（円）がSVGで描画
+- 5個のノード（円）がSVGで描画（レイアウトは実装者の裁量）
 - ノード間の接続線がanime.jsのSVGパス描画（stroke-dashoffset）で順番に現れる
 - ノードは微妙にパルスするアニメーション（`scale` + `opacity`の繰り返し）
 - AI/テクノロジーの「つながり」を視覚的に表現
@@ -154,14 +154,12 @@ Header (fixed, backdrop blur — 変更なし)
 
 ### Modified Files
 - `src/app/page.tsx` — NEWSセクション削除、各セクションにアニメーション適用
-- `src/app/globals.css` — 新規キーフレーム追加（既存は維持）
+- `src/app/globals.css` — 既存キーフレーム削除（anime.jsに置換）、新規CSSクラス追加
 - `src/components/Footer.tsx` — 波線SVG追加、staggerアニメーション追加
 - `package.json` — anime.jsを依存関係に追加
 
 ### Dependencies
-- `animejs` (v3.x) — 追加
-- `three`, `@react-three/fiber`, `@react-three/drei`, `@react-three/postprocessing` — 削除（extraneous）
-- `framer-motion` — 削除（extraneous）
+- `animejs@^3.2.2` — 追加（`import anime from 'animejs/lib/anime.es.js'`）
 
 ## Performance Considerations
 
@@ -169,7 +167,8 @@ Header (fixed, backdrop blur — 変更なし)
 - **will-change**: アニメーション対象要素に`will-change: transform, opacity`を適用してGPU合成を促進
 - **anime.js**: 軽量ライブラリ（~17KB gzipped）、パフォーマンスへの影響は最小
 - **SVGアニメーション**: DOM要素数を抑え、パス描画アニメーションで表現力を確保
-- **リデュースドモーション**: `prefers-reduced-motion`メディアクエリ対応。アクセシビリティのためアニメーションを無効化するオプションを提供
+- **リデュースドモーション**: `prefers-reduced-motion: reduce`検知時、全アニメーションをスキップし最終状態を即座に表示する
+- **スクロール連動**: VISIONのパララックスは`scroll`イベント + `requestAnimationFrame`でスロットリング。Intersection Observerはトリガー検知のみに使用
 
 ## Out of Scope
 
