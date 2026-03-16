@@ -1,0 +1,213 @@
+<h2>Hero Animation Patterns (No Three.js)</h2>
+<p class="subtitle">anime.js中心 — 3Dオブジェクトなしでモダンに</p>
+
+<div class="cards">
+  <!-- Pattern A: SVG Morphing -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #0a0a0a; height: 300px; overflow: hidden; position: relative;">
+      <svg viewBox="0 0 600 300" style="position: absolute; inset: 0; width: 100%; height: 100%;">
+        <defs>
+          <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:rgba(168,85,247,0.4)"/>
+            <stop offset="100%" style="stop-color:rgba(59,130,246,0.3)"/>
+          </linearGradient>
+          <linearGradient id="g2" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:rgba(99,102,241,0.3)"/>
+            <stop offset="100%" style="stop-color:rgba(168,85,247,0.2)"/>
+          </linearGradient>
+          <filter id="blur1"><feGaussianBlur stdDeviation="20"/></filter>
+          <filter id="blur2"><feGaussianBlur stdDeviation="15"/></filter>
+        </defs>
+        <path fill="url(#g1)" filter="url(#blur1)" style="animation: morph1 10s ease-in-out infinite;">
+          <animate attributeName="d"
+            values="M100,250 Q200,50 350,150 T550,200 L600,300 L0,300Z;
+                    M50,200 Q250,80 400,180 T580,150 L600,300 L0,300Z;
+                    M100,250 Q200,50 350,150 T550,200 L600,300 L0,300Z"
+            dur="10s" repeatCount="indefinite"/>
+        </path>
+        <path fill="url(#g2)" filter="url(#blur2)">
+          <animate attributeName="d"
+            values="M0,200 Q150,100 300,200 T500,150 L600,300 L0,300Z;
+                    M0,180 Q200,120 350,180 T550,200 L600,300 L0,300Z;
+                    M0,200 Q150,100 300,200 T500,150 L600,300 L0,300Z"
+            dur="8s" repeatCount="indefinite"/>
+        </path>
+        <!-- Particles -->
+        <circle cx="120" cy="100" r="2" fill="rgba(168,85,247,0.6)" style="animation: particleFloat1 6s ease-in-out infinite;"/>
+        <circle cx="300" cy="80" r="1.5" fill="rgba(59,130,246,0.5)" style="animation: particleFloat2 8s ease-in-out infinite;"/>
+        <circle cx="450" cy="120" r="2.5" fill="rgba(99,102,241,0.4)" style="animation: particleFloat3 7s ease-in-out infinite;"/>
+        <circle cx="200" cy="150" r="1" fill="rgba(255,255,255,0.3)" style="animation: particleFloat1 5s ease-in-out infinite;"/>
+        <circle cx="500" cy="60" r="1.5" fill="rgba(168,85,247,0.3)" style="animation: particleFloat2 9s ease-in-out infinite;"/>
+      </svg>
+      <div style="position: absolute; bottom: 15%; left: 8%; color: white; z-index: 2;">
+        <div style="font-size: 28px; font-weight: bold; text-shadow: 0 2px 30px rgba(0,0,0,0.8);">テクノロジーで</div>
+        <div style="font-size: 28px; font-weight: bold; text-shadow: 0 2px 30px rgba(0,0,0,0.8);">取り戻す</div>
+        <div style="width: 80px; height: 3px; background: linear-gradient(90deg, #a855f7, #3b82f6); margin-top: 12px;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: SVG Morphing + Particles</h3>
+      <p>有機的なSVGパスが滑らかに変形。微小パーティクルが浮遊。anime.jsでモーフィングを制御。軽量で上品。</p>
+    </div>
+  </div>
+
+  <!-- Pattern B: Text Animation -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #0a0a0a; height: 300px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center;">
+      <div style="text-align: center; position: relative; z-index: 2;">
+        <div style="overflow: hidden; margin-bottom: 4px;">
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.1s; opacity: 0;">テ</span>
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.15s; opacity: 0;">ク</span>
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.2s; opacity: 0;">ノ</span>
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.25s; opacity: 0;">ロ</span>
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.3s; opacity: 0;">ジ</span>
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.35s; opacity: 0;">ー</span>
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.4s; opacity: 0;">で</span>
+        </div>
+        <div style="overflow: hidden;">
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.6s; opacity: 0;">取</span>
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.65s; opacity: 0;">り</span>
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.7s; opacity: 0;">戻</span>
+          <span style="display: inline-block; font-size: 36px; font-weight: 900; color: white; letter-spacing: 0.05em; animation: charReveal 0.8s ease forwards; animation-delay: 0.75s; opacity: 0;">す</span>
+        </div>
+        <div style="width: 0; height: 3px; background: linear-gradient(90deg, #a855f7, #3b82f6); margin: 16px auto 0; animation: lineExpand 0.6s ease forwards; animation-delay: 1.2s;"></div>
+        <div style="margin-top: 16px; opacity: 0; animation: fadeUp 0.8s ease forwards; animation-delay: 1.5s;">
+          <span style="color: rgba(255,255,255,0.7); font-size: 14px; letter-spacing: 0.1em;">PaleTech — AI for Well-being</span>
+        </div>
+      </div>
+      <!-- Subtle grid background -->
+      <div style="position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 40px 40px; z-index: 1;"></div>
+    </div>
+    <div class="card-body">
+      <h3>B: Text Split Animation</h3>
+      <p>一文字ずつ下からリビール。テキスト自体がビジュアル。anime.jsのstaggerで滑らかに。ミニマルで印象的。</p>
+    </div>
+  </div>
+
+  <!-- Pattern C: CSS Gradient Mesh + anime.js -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #0a0a0a; height: 300px; overflow: hidden; position: relative;">
+      <!-- Gradient blobs -->
+      <div style="position: absolute; top: -20%; right: -10%; width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.3), transparent 70%); filter: blur(40px); animation: blobMove1 12s ease-in-out infinite;"></div>
+      <div style="position: absolute; bottom: -30%; left: -15%; width: 350px; height: 350px; border-radius: 50%; background: radial-gradient(circle, rgba(59,130,246,0.25), transparent 70%); filter: blur(50px); animation: blobMove2 15s ease-in-out infinite;"></div>
+      <div style="position: absolute; top: 30%; left: 40%; width: 200px; height: 200px; border-radius: 50%; background: radial-gradient(circle, rgba(99,102,241,0.2), transparent 70%); filter: blur(35px); animation: blobMove3 10s ease-in-out infinite;"></div>
+      <!-- Noise texture overlay -->
+      <div style="position: absolute; inset: 0; opacity: 0.15; background: repeating-conic-gradient(rgba(255,255,255,0.03) 0% 25%, transparent 0% 50%) 0 0 / 4px 4px;"></div>
+      <!-- Text -->
+      <div style="position: absolute; bottom: 15%; left: 8%; color: white; z-index: 2;">
+        <div style="font-size: 28px; font-weight: bold; text-shadow: 0 2px 30px rgba(0,0,0,0.5);">テクノロジーで</div>
+        <div style="font-size: 28px; font-weight: bold; text-shadow: 0 2px 30px rgba(0,0,0,0.5);">取り戻す</div>
+        <div style="width: 80px; height: 3px; background: linear-gradient(90deg, #a855f7, #3b82f6); margin-top: 12px;"></div>
+        <div style="font-size: 12px; color: rgba(255,255,255,0.5); margin-top: 10px; letter-spacing: 0.15em;">TECHNOLOGY FOR WELL-BEING</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C: Gradient Mesh + Blur</h3>
+      <p>大きなグラデーションブロブがゆっくり移動。CSS + anime.jsでスクロール連動。Stripe/Linear風。今一番モダン。</p>
+    </div>
+  </div>
+
+  <!-- Pattern D: Lottie-style -->
+  <div class="card" data-choice="d" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #0a0a0a; height: 300px; overflow: hidden; position: relative;">
+      <!-- Lottie-style vector animation mockup -->
+      <div style="position: absolute; right: 5%; top: 10%; width: 55%; height: 80%;">
+        <!-- Animated connected nodes -->
+        <svg viewBox="0 0 300 250" style="width: 100%; height: 100%;">
+          <defs>
+            <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:rgba(168,85,247,0.4)"/>
+              <stop offset="100%" style="stop-color:rgba(59,130,246,0.4)"/>
+            </linearGradient>
+          </defs>
+          <!-- Connection lines -->
+          <line x1="80" y1="60" x2="200" y2="90" stroke="url(#lineGrad)" stroke-width="1.5" style="animation: lineDraw 2s ease forwards; stroke-dasharray: 200; stroke-dashoffset: 200;"/>
+          <line x1="200" y1="90" x2="150" y2="180" stroke="url(#lineGrad)" stroke-width="1.5" style="animation: lineDraw 2s ease forwards 0.3s; stroke-dasharray: 200; stroke-dashoffset: 200;"/>
+          <line x1="80" y1="60" x2="150" y2="180" stroke="url(#lineGrad)" stroke-width="1" opacity="0.5" style="animation: lineDraw 2s ease forwards 0.6s; stroke-dasharray: 200; stroke-dashoffset: 200;"/>
+          <line x1="200" y1="90" x2="260" y2="160" stroke="url(#lineGrad)" stroke-width="1" opacity="0.5" style="animation: lineDraw 2s ease forwards 0.5s; stroke-dasharray: 200; stroke-dashoffset: 200;"/>
+          <line x1="150" y1="180" x2="260" y2="160" stroke="url(#lineGrad)" stroke-width="1.5" style="animation: lineDraw 2s ease forwards 0.4s; stroke-dasharray: 200; stroke-dashoffset: 200;"/>
+          <!-- Nodes -->
+          <circle cx="80" cy="60" r="8" fill="none" stroke="#a855f7" stroke-width="2" style="animation: nodeAppear 0.5s ease forwards; opacity: 0;">
+            <animate attributeName="r" values="8;10;8" dur="3s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="80" cy="60" r="3" fill="#a855f7" style="animation: nodeAppear 0.5s ease forwards 0.1s; opacity: 0;"/>
+          <circle cx="200" cy="90" r="10" fill="none" stroke="#6366f1" stroke-width="2" style="animation: nodeAppear 0.5s ease forwards 0.2s; opacity: 0;">
+            <animate attributeName="r" values="10;12;10" dur="4s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="200" cy="90" r="4" fill="#6366f1" style="animation: nodeAppear 0.5s ease forwards 0.3s; opacity: 0;"/>
+          <circle cx="150" cy="180" r="6" fill="none" stroke="#3b82f6" stroke-width="2" style="animation: nodeAppear 0.5s ease forwards 0.4s; opacity: 0;">
+            <animate attributeName="r" values="6;8;6" dur="3.5s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="150" cy="180" r="2.5" fill="#3b82f6" style="animation: nodeAppear 0.5s ease forwards 0.5s; opacity: 0;"/>
+          <circle cx="260" cy="160" r="7" fill="none" stroke="#8b5cf6" stroke-width="2" style="animation: nodeAppear 0.5s ease forwards 0.3s; opacity: 0;">
+            <animate attributeName="r" values="7;9;7" dur="3.8s" repeatCount="indefinite"/>
+          </circle>
+          <circle cx="260" cy="160" r="3" fill="#8b5cf6" style="animation: nodeAppear 0.5s ease forwards 0.4s; opacity: 0;"/>
+          <!-- Pulse rings -->
+          <circle cx="200" cy="90" r="10" fill="none" stroke="rgba(99,102,241,0.3)" stroke-width="1" style="animation: pulse 3s ease-out infinite;"/>
+        </svg>
+      </div>
+      <!-- Text -->
+      <div style="position: absolute; bottom: 15%; left: 8%; color: white; z-index: 2;">
+        <div style="font-size: 28px; font-weight: bold; text-shadow: 0 2px 30px rgba(0,0,0,0.5);">テクノロジーで</div>
+        <div style="font-size: 28px; font-weight: bold; text-shadow: 0 2px 30px rgba(0,0,0,0.5);">取り戻す</div>
+        <div style="width: 80px; height: 3px; background: linear-gradient(90deg, #a855f7, #3b82f6); margin-top: 12px;"></div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>D: Lottie-style Vector Animation</h3>
+      <p>ネットワークノードが線でつながるベクターアニメ。AI/テクノロジーを視覚的に表現。Lottie or anime.jsで実装。</p>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes charReveal {
+  0% { opacity: 0; transform: translateY(100%); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes lineExpand {
+  0% { width: 0; }
+  100% { width: 120px; }
+}
+@keyframes fadeUp {
+  0% { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes blobMove1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(-30px, 20px) scale(1.1); }
+  66% { transform: translate(20px, -10px) scale(0.95); }
+}
+@keyframes blobMove2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -20px) scale(1.05); }
+  66% { transform: translate(-20px, 30px) scale(1.1); }
+}
+@keyframes blobMove3 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-25px, 15px) scale(1.15); }
+}
+@keyframes particleFloat1 {
+  0%, 100% { transform: translateY(0); opacity: 0.6; }
+  50% { transform: translateY(-20px); opacity: 1; }
+}
+@keyframes particleFloat2 {
+  0%, 100% { transform: translateY(0) translateX(0); opacity: 0.5; }
+  50% { transform: translateY(-15px) translateX(10px); opacity: 0.8; }
+}
+@keyframes particleFloat3 {
+  0%, 100% { transform: translateY(0); opacity: 0.4; }
+  50% { transform: translateY(-25px); opacity: 0.7; }
+}
+@keyframes lineDraw {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes nodeAppear {
+  to { opacity: 1; }
+}
+@keyframes pulse {
+  0% { r: 10; opacity: 0.5; }
+  100% { r: 30; opacity: 0; }
+}
+</style>

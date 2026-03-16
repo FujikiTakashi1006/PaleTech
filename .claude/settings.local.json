@@ -1,9 +1,46 @@
 {
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1",
+    "ENABLE_TOOL_SEARCH": "true"
+  },
   "permissions": {
     "allow": [
-      "Bash(npm run dev:*)"
+      "Bash(*)",
+      "Read(*)",
+      "Edit(*)",
+      "Write(*)",
+      "Glob(*)",
+      "Grep(*)",
+      "WebFetch(*)",
+      "WebSearch(*)",
+      "NotebookEdit(*)",
+      "Task(*)",
+      "mcp__serena__*"
+    ]
+  },
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "afplay /System/Library/Sounds/Hero.aiff"
+          }
+        ]
+      }
     ],
-    "deny": [],
-    "ask": []
-  }
+    "PreToolUse": [
+      {
+        "matcher": "Bash(git commit*)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /Users/fujikitakashi/Documents/GitHub/prj-azn-val-api && poetry run ruff check . --quiet"
+          }
+        ]
+      }
+    ]
+  },
+  "skipDangerousModePermissionPrompt": true
 }

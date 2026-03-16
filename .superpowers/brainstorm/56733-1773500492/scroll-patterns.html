@@ -1,0 +1,176 @@
+<h2>Scroll Animation Patterns</h2>
+<p class="subtitle">セクションがビューポートに入ったときの動き — anime.jsで実装</p>
+
+<div class="cards">
+  <!-- Pattern A: Fade + Slide Up -->
+  <div class="card" data-choice="a" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #f8f8f8; height: 320px; overflow: hidden; position: relative; padding: 20px;">
+      <div style="display: flex; flex-direction: column; gap: 12px; height: 100%;">
+        <!-- Before state -->
+        <div style="flex: 1; background: white; border-radius: 8px; padding: 16px; border: 1px solid #e5e5e5;">
+          <div style="font-size: 10px; color: #999; margin-bottom: 8px;">SCROLL DOWN...</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="opacity: 0.15; transform: translateY(30px);">
+              <div style="font-size: 18px; font-weight: bold; color: #111;">NEWS</div>
+              <div style="width: 40px; height: 2px; background: #111; margin-top: 4px;"></div>
+            </div>
+            <div style="opacity: 0.15; transform: translateY(30px);">
+              <div style="height: 8px; background: #e5e5e5; border-radius: 4px; width: 80%;"></div>
+            </div>
+            <div style="opacity: 0.15; transform: translateY(30px);">
+              <div style="height: 8px; background: #e5e5e5; border-radius: 4px; width: 60%;"></div>
+            </div>
+          </div>
+        </div>
+        <!-- After state (animated) -->
+        <div style="flex: 1; background: white; border-radius: 8px; padding: 16px; border: 1px solid #e5e5e5;">
+          <div style="font-size: 10px; color: #999; margin-bottom: 8px;">IN VIEWPORT</div>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <div style="animation: slideUpFade 0.8s ease forwards;">
+              <div style="font-size: 18px; font-weight: bold; color: #111;">NEWS</div>
+              <div style="width: 40px; height: 2px; background: #111; margin-top: 4px;"></div>
+            </div>
+            <div style="animation: slideUpFade 0.8s ease forwards 0.15s; opacity: 0;">
+              <div style="height: 8px; background: #ddd; border-radius: 4px; width: 80%;"></div>
+            </div>
+            <div style="animation: slideUpFade 0.8s ease forwards 0.3s; opacity: 0;">
+              <div style="height: 8px; background: #ddd; border-radius: 4px; width: 60%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A: Stagger Fade + Slide Up</h3>
+      <p>要素が順番に下からフェードイン。anime.jsのstaggerで時間差。シンプルで上品。最も汎用的。</p>
+    </div>
+  </div>
+
+  <!-- Pattern B: Parallax + Scale -->
+  <div class="card" data-choice="b" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #f8f8f8; height: 320px; overflow: hidden; position: relative; padding: 20px;">
+      <div style="display: flex; flex-direction: column; gap: 12px; height: 100%;">
+        <!-- Parallax demo -->
+        <div style="flex: 1; background: white; border-radius: 8px; padding: 16px; border: 1px solid #e5e5e5; overflow: hidden; position: relative;">
+          <div style="font-size: 10px; color: #999; margin-bottom: 8px;">PARALLAX LAYERS</div>
+          <!-- Background layer -->
+          <div style="position: absolute; bottom: 0; left: 0; right: 0; height: 60%; background: linear-gradient(180deg, transparent, rgba(168,85,247,0.05)); animation: parallaxBg 3s ease-in-out infinite alternate;"></div>
+          <!-- Foreground content -->
+          <div style="position: relative; z-index: 2;">
+            <div style="animation: parallaxFg 3s ease-in-out infinite alternate;">
+              <div style="font-size: 18px; font-weight: bold; color: #111;">VISION</div>
+              <div style="width: 40px; height: 2px; background: #111; margin-top: 4px;"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Scale-in cards -->
+        <div style="flex: 1; background: white; border-radius: 8px; padding: 16px; border: 1px solid #e5e5e5;">
+          <div style="font-size: 10px; color: #999; margin-bottom: 8px;">SCALE IN CARDS</div>
+          <div style="display: flex; gap: 6px;">
+            <div style="flex: 1; background: #f5f5f5; border-radius: 6px; padding: 8px; animation: scaleIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards; opacity: 0; transform: scale(0.85);">
+              <div style="width: 20px; height: 20px; background: #111; border-radius: 50%; margin-bottom: 4px;"></div>
+              <div style="height: 4px; background: #ddd; border-radius: 2px; width: 80%;"></div>
+            </div>
+            <div style="flex: 1; background: #f5f5f5; border-radius: 6px; padding: 8px; animation: scaleIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards 0.15s; opacity: 0; transform: scale(0.85);">
+              <div style="width: 20px; height: 20px; background: #111; border-radius: 50%; margin-bottom: 4px;"></div>
+              <div style="height: 4px; background: #ddd; border-radius: 2px; width: 80%;"></div>
+            </div>
+            <div style="flex: 1; background: #f5f5f5; border-radius: 6px; padding: 8px; animation: scaleIn 0.6s cubic-bezier(0.16,1,0.3,1) forwards 0.3s; opacity: 0; transform: scale(0.85);">
+              <div style="width: 20px; height: 20px; background: #111; border-radius: 50%; margin-bottom: 4px;"></div>
+              <div style="height: 4px; background: #ddd; border-radius: 2px; width: 80%;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B: Parallax + Scale In</h3>
+      <p>背景と前景が異なる速度で動くパララックス。カードはスケールインで登場。奥行き感。Apple風。</p>
+    </div>
+  </div>
+
+  <!-- Pattern C: Clip/Reveal -->
+  <div class="card" data-choice="c" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #f8f8f8; height: 320px; overflow: hidden; position: relative; padding: 20px;">
+      <div style="display: flex; flex-direction: column; gap: 12px; height: 100%;">
+        <!-- Clip reveal -->
+        <div style="flex: 1; background: white; border-radius: 8px; padding: 16px; border: 1px solid #e5e5e5;">
+          <div style="font-size: 10px; color: #999; margin-bottom: 8px;">CLIP REVEAL</div>
+          <div style="overflow: hidden;">
+            <div style="animation: clipRevealH 1s cubic-bezier(0.77,0,0.175,1) forwards;">
+              <div style="font-size: 18px; font-weight: bold; color: #111;">SERVICE</div>
+            </div>
+          </div>
+          <div style="overflow: hidden; margin-top: 6px;">
+            <div style="animation: clipRevealH 1s cubic-bezier(0.77,0,0.175,1) forwards 0.2s; transform: translateX(-100%);">
+              <div style="width: 40px; height: 2px; background: #111;"></div>
+            </div>
+          </div>
+          <div style="overflow: hidden; margin-top: 8px;">
+            <div style="animation: clipRevealH 1s cubic-bezier(0.77,0,0.175,1) forwards 0.4s; transform: translateX(-100%);">
+              <div style="height: 6px; background: #e5e5e5; border-radius: 3px; width: 70%;"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Vertical wipe -->
+        <div style="flex: 1; background: white; border-radius: 8px; padding: 16px; border: 1px solid #e5e5e5; position: relative;">
+          <div style="font-size: 10px; color: #999; margin-bottom: 8px;">VERTICAL WIPE</div>
+          <div style="display: flex; gap: 6px;">
+            <div style="flex: 1; height: 60px; background: #f5f5f5; border-radius: 6px; position: relative; overflow: hidden;">
+              <div style="position: absolute; inset: 0; background: white; animation: wipeDown 0.8s ease forwards 0.2s;"></div>
+              <div style="padding: 8px;">
+                <div style="width: 20px; height: 20px; background: #111; border-radius: 50%; margin-bottom: 4px;"></div>
+                <div style="height: 4px; background: #ddd; border-radius: 2px;"></div>
+              </div>
+            </div>
+            <div style="flex: 1; height: 60px; background: #f5f5f5; border-radius: 6px; position: relative; overflow: hidden;">
+              <div style="position: absolute; inset: 0; background: white; animation: wipeDown 0.8s ease forwards 0.4s;"></div>
+              <div style="padding: 8px;">
+                <div style="width: 20px; height: 20px; background: #111; border-radius: 50%; margin-bottom: 4px;"></div>
+                <div style="height: 4px; background: #ddd; border-radius: 2px;"></div>
+              </div>
+            </div>
+            <div style="flex: 1; height: 60px; background: #f5f5f5; border-radius: 6px; position: relative; overflow: hidden;">
+              <div style="position: absolute; inset: 0; background: white; animation: wipeDown 0.8s ease forwards 0.6s;"></div>
+              <div style="padding: 8px;">
+                <div style="width: 20px; height: 20px; background: #111; border-radius: 50%; margin-bottom: 4px;"></div>
+                <div style="height: 4px; background: #ddd; border-radius: 2px;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C: Clip Reveal + Wipe</h3>
+      <p>テキストが横からスライドで現れるクリップリビール。カードは上からワイプで出現。演出感が強い。</p>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes slideUpFade {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes parallaxBg {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-15px); }
+}
+@keyframes parallaxFg {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-8px); }
+}
+@keyframes scaleIn {
+  0% { opacity: 0; transform: scale(0.85); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes clipRevealH {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(0); }
+}
+@keyframes wipeDown {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(100%); }
+}
+</style>
