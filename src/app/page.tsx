@@ -57,6 +57,9 @@ function CursorDot() {
 }
 
 /* ─── Smooth scroll (lerp only, no snap) ─── */
+// wheelInterceptRef: if set to a function, wheel events are forwarded there instead of scrolling
+const wheelInterceptRef = { current: null as ((deltaY: number) => void) | null };
+
 function useSmoothScroll(containerRef: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const el = containerRef.current;
@@ -77,6 +80,10 @@ function useSmoothScroll(containerRef: React.RefObject<HTMLDivElement | null>) {
 
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
+      if (wheelInterceptRef.current) {
+        wheelInterceptRef.current(e.deltaY);
+        return;
+      }
       target = Math.max(0, Math.min(target + e.deltaY, maxScroll()));
     };
 
@@ -201,7 +208,7 @@ function HeroSection({ containerRef }: { containerRef: React.RefObject<HTMLDivEl
       <div className="absolute right-[-3vw] top-[18vh] w-[35vw] h-[35vw] rounded-full border" style={{ borderColor: 'rgba(249,168,212,0.08)' }} />
 
       <div className="max-w-[1440px] mx-auto w-full">
-        <p className="font-gothic text-[11px] tracking-[0.35em] text-stone-500 uppercase mb-5">PaleTech &mdash; Fukuoka Tokyo</p>
+        <p className="font-gothic text-[11px] tracking-[0.35em] text-stone-500 uppercase mb-5">PaleTech &mdash; Fukuoka&times;Tokyo</p>
         <h1 className="font-display text-[clamp(2.5rem,8vw,9rem)] leading-[1] text-stone-800 tracking-tight mb-8 font-extrabold inline-block">
           <span className="hero-title block opacity-0">Paleolithic</span>
           <span className="hero-title block opacity-0">Technology</span>
@@ -245,7 +252,7 @@ function PhilosophySection({ containerRef }: { containerRef: React.RefObject<HTM
               style={{ opacity: labelOp, transform: `translateX(${labelX}px)` }}>Philosophy</p>
             <h2 className="font-display text-5xl md:text-6xl lg:text-8xl text-stone-800 font-extrabold leading-[1.05]">
               <span className="block" style={{ opacity: title1Op, transform: `translateY(${title1Y}px)` }}>Human</span>
-              <span className="block" style={{ opacity: title2Op, transform: `translateY(${title2Y}px)` }}>First.</span>
+              <span className="block" style={{ opacity: title2Op, transform: `translateY(${title2Y}px)` }}>Nature.</span>
             </h2>
             <div className="h-px w-24 mt-8"
               style={{ background: 'linear-gradient(90deg, #60a5fa, #f9a8d4, transparent)', transformOrigin: 'left', transform: `scaleX(${lineScale})` }} />
@@ -253,15 +260,15 @@ function PhilosophySection({ containerRef }: { containerRef: React.RefObject<HTM
           <div className="lg:col-span-6 lg:col-start-7 flex flex-col justify-center">
             <p className="font-gothic text-lg md:text-xl text-stone-600 leading-[2.2] font-light mb-8"
               style={{ opacity: text1Op, transform: `translateY(${text1Y}px)` }}>
-              多様性を認め合い、それぞれの強みを活かせる社会。<br />
-              誰もが自分らしく生きられる世界を、<br />
-              テクノロジーの力で実現する。
+              SNS、ゲーム、際限のない通知——<br />
+              テクノロジーはいつしか、<br />
+              人間から本来の幸せを奪う道具になった。
             </p>
             <p className="font-gothic text-[15px] text-stone-500 leading-[2.2] font-light"
               style={{ opacity: text2Op, transform: `translateY(${text2Y}px)` }}>
-              テクノロジーと人の温かさを融合させ、
-              持続可能で包括的なコミュニティを創造します。
-              私たちは、一人ひとりの個性が最大限に発揮される未来を信じています。
+              私たちは、AIテクノロジーでその流れを逆転させます。<br />
+              人間本来の生き方を、現代の技術で取り戻す。
+              それがPaleolithic × Technologyの意志です。
             </p>
           </div>
         </div>
@@ -274,12 +281,59 @@ function PhilosophySection({ containerRef }: { containerRef: React.RefObject<HTM
 
 /* ─── RAG left-side illustration: auto-plays with anime.js when step triggers ─── */
 
-/* ─── Services Section: cards → click → selected expands, others slide away ─── */
+/* ─── RAG Illustration: auto-plays with anime.js when step triggers ─── */
+function RAGIllustration({ steps, progress, stepAppear }: {
+  steps: { id: string; color: string; icon: (op: number) => React.ReactNode }[];
+  progress: number;
+  stepAppear: number[];
+}) {
+  const [activeStep, setActiveStep] = useState(-1);
+  const [iconProgress, setIconProgress] = useState(0);
+  const animRef = useRef<ReturnType<typeof anime> | null>(null);
+
+  useEffect(() => {
+    let current = -1;
+    for (let i = stepAppear.length - 1; i >= 0; i--) {
+      if (progress >= stepAppear[i]) { current = i; break; }
+    }
+    if (current !== activeStep) setActiveStep(current);
+  }, [progress, stepAppear, activeStep]);
+
+  useEffect(() => {
+    if (activeStep < 0) return;
+    setIconProgress(0);
+    if (animRef.current) animRef.current.pause();
+    const obj = { val: 0 };
+    animRef.current = anime({
+      targets: obj, val: 1, duration: 2000, easing: 'easeInOutCubic',
+      update: () => setIconProgress(obj.val),
+    });
+    return () => { if (animRef.current) animRef.current.pause(); };
+  }, [activeStep]);
+
+  return (
+    <div className="relative h-[160px] md:h-[200px]">
+      {steps.map((step, i) => (
+        <div key={step.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-500"
+          style={{ opacity: i === activeStep ? 1 : 0, pointerEvents: i === activeStep ? 'auto' : 'none' }}>
+          <div className="w-full max-w-[280px] h-full" style={{ filter: `drop-shadow(0 4px 20px ${step.color}20)` }}>
+            {step.icon(i === activeStep ? iconProgress : 0)}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Services Section: WE DEVELOP scroll + detail panel ─── */
 function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
   const ref = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
   const [detailOpen, setDetailOpen] = useState<number | null>(null);
+  const [ragProgress, setRagProgress] = useState(0);
+  const ragProgressRef = useRef(0);
 
+  // Main scroll progress
   useEffect(() => {
     const section = ref.current;
     const container = containerRef.current;
@@ -302,17 +356,79 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
     return () => container.removeEventListener('scroll', update);
   }, [containerRef]);
 
+  // When detail is open: intercept wheel → drive ragProgress instead of page scroll
+  useEffect(() => {
+    if (detailOpen === null) {
+      wheelInterceptRef.current = null;
+      return;
+    }
+
+    ragProgressRef.current = 0;
+    setRagProgress(0);
+
+    wheelInterceptRef.current = (deltaY: number) => {
+      ragProgressRef.current = Math.max(0, Math.min(1, ragProgressRef.current + deltaY * 0.0008));
+      setRagProgress(ragProgressRef.current);
+    };
+
+    return () => { wheelInterceptRef.current = null; };
+  }, [detailOpen]);
+
   const services = [
     { en: 'RAG', ja: 'RAG開発', desc: 'Retrieval-Augmented Generation（検索拡張生成）を活用した高精度なAIシステムを構築。社内ナレッジの活用や業務効率化を実現します。', color: '#7aa3ed' },
     { en: 'WEBSITES', ja: 'Webサイト制作', desc: 'ブランドの世界観を体現する、美しく機能的なWebサイトをデザイン・制作します。', color: '#5fbf96' },
     { en: 'WEB APPS', ja: 'Web開発', desc: 'Next.js・React等のモダン技術で、スケーラブルなWebアプリケーションを開発します。', color: '#9b8ad4' },
   ];
 
+  // RAG scroll-driven steps with SVG icons
   const ragSteps = [
-    { label: 'Step 01', title: 'ユーザーが質問する', desc: 'ユーザーが自然言語で質問を入力。AIが質問の意図を理解し、検索クエリに変換します。' },
-    { label: 'Step 02', title: 'ベクトル検索で関連文書を取得', desc: '質問をベクトル化し、データベース内の類似ドキュメントを高速に検索。最も関連性の高い情報源を特定します。' },
-    { label: 'Step 03', title: 'LLMが回答を生成', desc: '取得した文書をコンテキストとしてLLMに渡し、根拠に基づいた正確な回答を生成します。' },
+    {
+      id: 'query', label: 'Step 01', title: 'ユーザーが質問する',
+      desc: 'ユーザーが自然言語で質問を入力。AIが質問の意図を理解し、検索クエリに変換します。',
+      color: '#7aa3ed',
+      icon: (op: number) => (
+        <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
+          <rect x="10" y="10" width="100" height="50" rx="12" stroke="#7aa3ed" strokeWidth="1.5" style={{ strokeDasharray: 300, strokeDashoffset: 300 * (1 - op), opacity: op }} />
+          <line x1="26" y1="28" x2="74" y2="28" stroke="#7aa3ed" strokeWidth="2" strokeLinecap="round" style={{ opacity: interp(op, 0.3, 0.6, 0, 1) }} />
+          <line x1="26" y1="38" x2="60" y2="38" stroke="#7aa3ed" strokeWidth="2" strokeLinecap="round" style={{ opacity: interp(op, 0.4, 0.7, 0, 1) }} />
+          <rect x="62" y="34" width="2" height="10" fill="#7aa3ed" rx="1" style={{ opacity: interp(op, 0.5, 0.8, 0, 1) }} />
+          <path d="M60 62 L60 76 M54 70 L60 76 L66 70" stroke="#7aa3ed" strokeWidth="1.5" strokeLinecap="round" style={{ opacity: interp(op, 0.7, 1, 0, 1) }} />
+        </svg>
+      ),
+    },
+    {
+      id: 'search', label: 'Step 02', title: 'ベクトル検索で関連文書を取得',
+      desc: '質問をベクトル化し、データベース内の類似ドキュメントを高速に検索。最も関連性の高い情報源を特定します。',
+      color: '#7aa3ed',
+      icon: (op: number) => (
+        <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
+          {[{cx:25,cy:20,d:0},{cx:45,cy:15,d:0.05},{cx:65,cy:25,d:0.1},{cx:85,cy:18,d:0.15},{cx:35,cy:45,d:0.2},{cx:55,cy:40,d:0.25},{cx:75,cy:50,d:0.3},{cx:95,cy:42,d:0.35},{cx:20,cy:65,d:0.4},{cx:45,cy:60,d:0.45}].map((dot, i) => (
+            <circle key={i} cx={dot.cx} cy={dot.cy} r={i===5?5:3} fill={i===5?'#7aa3ed':'#7aa3ed40'}
+              style={{opacity:interp(op,dot.d,dot.d+0.3,0,1),transform:`scale(${interp(op,dot.d,dot.d+0.3,0,1)})`,transformOrigin:`${dot.cx}px ${dot.cy}px`}}/>
+          ))}
+          <circle cx="82" cy="60" r="10" stroke="#7aa3ed" strokeWidth="1.5" style={{strokeDasharray:80,strokeDashoffset:80*(1-interp(op,0.5,0.8,0,1))}}/>
+          <line x1="89" y1="67" x2="98" y2="76" stroke="#7aa3ed" strokeWidth="2" strokeLinecap="round" style={{opacity:interp(op,0.6,0.9,0,1)}}/>
+        </svg>
+      ),
+    },
+    {
+      id: 'generate', label: 'Step 03', title: 'LLMが回答を生成',
+      desc: '取得した文書をコンテキストとしてLLMに渡し、根拠に基づいた正確な回答を生成します。',
+      color: '#7aa3ed',
+      icon: (op: number) => (
+        <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
+          <rect x="5" y="4" width="110" height="72" rx="10" stroke="#7aa3ed" strokeWidth="1.5" style={{strokeDasharray:400,strokeDashoffset:400*(1-interp(op,0,0.25,0,1))}}/>
+          <circle cx="16" cy="16" r="3" fill="#7aa3ed" style={{opacity:interp(op,0.1,0.3,0,1)}}/>
+          <text x="22" y="18" fill="#7aa3ed" fontSize="6" fontFamily="monospace" fontWeight="bold" style={{opacity:interp(op,0.1,0.3,0,1)}}>AI</text>
+          {[{y:35,w:80,d:0.2},{y:47,w:65,d:0.45},{y:59,w:50,d:0.7}].map((line,i)=>{
+            const lo=interp(op,line.d,line.d+0.15,0,1);
+            return(<line key={i} x1="16" y1={line.y} x2={16+line.w*lo} y2={line.y} stroke="#7aa3ed" strokeWidth="2" strokeLinecap="round" style={{opacity:lo*0.7}}/>);
+          })}
+        </svg>
+      ),
+    },
   ];
+  const stepAppear = [0.08, 0.35, 0.62];
 
   const svcStart = 0.1;
   const seg = (1 - svcStart) / services.length;
@@ -321,7 +437,7 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
     <div ref={ref} style={{ height: `${(services.length * 1.5 + 1) * 100}vh` }} className="relative">
       <div className="sticky top-0 h-screen flex overflow-hidden">
 
-        {/* Left side */}
+        {/* ─── Left: WE DEVELOP + descriptions ─── */}
         <div className="flex flex-col justify-center px-6 lg:px-12 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{ width: detailOpen !== null ? '45%' : '100%', flexShrink: 0 }}>
 
@@ -385,70 +501,85 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
           </div>
         </div>
 
-        {/* Right detail panel */}
-        <div className="h-full border-l overflow-y-auto transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        {/* ─── Right: Detail panel ─── */}
+        <div className="h-full border-l overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
           style={{
             width: detailOpen !== null ? '55%' : '0%',
             opacity: detailOpen !== null ? 1 : 0,
             borderColor: detailOpen !== null ? 'rgba(0,0,0,0.06)' : 'transparent',
           }}>
-          {detailOpen !== null && (
-            <div className="p-8 lg:p-12 h-full flex flex-col justify-center">
+          <div className="h-full flex flex-col justify-center p-6 lg:p-10">
 
-              {detailOpen === 0 && (
-                <div>
-                  <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-8" style={{ color: services[0].color }}>How RAG Works</p>
-                  <div className="space-y-10">
-                    {ragSteps.map((step, i) => (
-                      <div key={i} className="flex gap-5">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
-                          style={{ background: services[0].color }}>
-                          {i + 1}
+            {/* RAG: scroll-driven illustration + timeline */}
+            {detailOpen === 0 && (
+              <div>
+                <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-6" style={{ color: services[0].color }}>How RAG Works</p>
+                <div className="flex flex-col md:flex-row gap-6 items-start">
+                  {/* Left: auto-play illustration */}
+                  <div className="w-full md:w-5/12">
+                    <RAGIllustration steps={ragSteps} progress={ragProgress} stepAppear={stepAppear} />
+                  </div>
+                  {/* Right: scroll-driven timeline */}
+                  <div className="w-full md:w-7/12 relative">
+                    <div className="absolute left-[7px] top-0 bottom-0 w-[2px] bg-stone-200/30 rounded-full hidden md:block">
+                      <div className="w-full rounded-full" style={{ height: `${Math.min(ragProgress * 130, 100)}%`, background: '#7aa3ed' }} />
+                    </div>
+                    {ragSteps.map((step, i) => {
+                      const appear = interp(ragProgress, stepAppear[i], stepAppear[i] + 0.12, 0, 1);
+                      return (
+                        <div key={step.id} className="flex items-start gap-4 pb-5"
+                          style={{ opacity: appear, transform: `translateY(${(1 - appear) * 20}px)` }}>
+                          <div className="hidden md:flex flex-shrink-0 w-4 h-4 rounded-full border-2 mt-0.5 items-center justify-center relative z-10"
+                            style={{ borderColor: step.color, background: appear > 0.5 ? step.color : 'white', transition: 'background 0.4s' }}>
+                            {appear > 0.5 && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                          </div>
+                          <div>
+                            <span className="font-gothic text-[10px] tracking-[0.2em] uppercase mb-1 block" style={{ color: step.color }}>{step.label}</span>
+                            <h4 className="font-display text-base text-stone-800 font-bold mb-1">{step.title}</h4>
+                            <p className="font-gothic text-[12px] text-stone-500 leading-[1.8] font-light">{step.desc}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-gothic text-[10px] tracking-[0.2em] uppercase mb-1.5" style={{ color: services[0].color }}>{step.label}</p>
-                          <h4 className="font-display text-lg text-stone-800 font-bold mb-2">{step.title}</h4>
-                          <p className="font-gothic text-[13px] text-stone-500 leading-[1.9] font-light">{step.desc}</p>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
-              )}
+              </div>
+            )}
 
-              {detailOpen === 1 && (
-                <div>
-                  <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-8" style={{ color: services[1].color }}>Design Process</p>
-                  <div className="space-y-6">
-                    {['ヒアリング・リサーチ', 'ワイヤーフレーム設計', 'ビジュアルデザイン', 'コーディング・実装', 'テスト・公開'].map((step, i) => (
-                      <div key={i} className="flex items-center gap-5">
-                        <span className="font-display text-[28px] font-extrabold leading-none" style={{ color: services[1].color + '25' }}>{String(i + 1).padStart(2, '0')}</span>
-                        <p className="font-gothic text-[14px] text-stone-600 font-light">{step}</p>
-                      </div>
-                    ))}
-                  </div>
+            {/* Websites detail */}
+            {detailOpen === 1 && (
+              <div>
+                <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-8" style={{ color: services[1].color }}>Design Process</p>
+                <div className="space-y-6">
+                  {['ヒアリング・リサーチ', 'ワイヤーフレーム設計', 'ビジュアルデザイン', 'コーディング・実装', 'テスト・公開'].map((step, i) => (
+                    <div key={i} className="flex items-center gap-5">
+                      <span className="font-display text-[28px] font-extrabold leading-none" style={{ color: services[1].color + '25' }}>{String(i + 1).padStart(2, '0')}</span>
+                      <p className="font-gothic text-[14px] text-stone-600 font-light">{step}</p>
+                    </div>
+                  ))}
                 </div>
-              )}
+              </div>
+            )}
 
-              {detailOpen === 2 && (
-                <div>
-                  <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-8" style={{ color: services[2].color }}>Tech Stack</p>
-                  <div className="flex flex-wrap gap-3 mb-8">
-                    {['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Node.js', 'PostgreSQL', 'Prisma', 'Vercel'].map((tech, i) => (
-                      <span key={i} className="px-4 py-2 rounded-full font-gothic text-[12px] border"
-                        style={{ borderColor: services[2].color + '25', color: services[2].color, background: services[2].color + '08' }}>
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                  <p className="font-gothic text-[14px] text-stone-500 leading-[2] font-light">
-                    フロントエンドからバックエンド、インフラまで。TypeScriptベースのモダンスタックで保守性と拡張性を両立します。
-                  </p>
+            {/* Web Apps detail */}
+            {detailOpen === 2 && (
+              <div>
+                <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-8" style={{ color: services[2].color }}>Tech Stack</p>
+                <div className="flex flex-wrap gap-3 mb-8">
+                  {['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Node.js', 'PostgreSQL', 'Prisma', 'Vercel'].map((tech, i) => (
+                    <span key={i} className="px-4 py-2 rounded-full font-gothic text-[12px] border"
+                      style={{ borderColor: services[2].color + '25', color: services[2].color, background: services[2].color + '08' }}>
+                      {tech}
+                    </span>
+                  ))}
                 </div>
-              )}
+                <p className="font-gothic text-[14px] text-stone-500 leading-[2] font-light">
+                  フロントエンドからバックエンド、インフラまで。TypeScriptベースのモダンスタックで保守性と拡張性を両立します。
+                </p>
+              </div>
+            )}
 
-            </div>
-          )}
+          </div>
         </div>
 
       </div>
@@ -616,10 +747,7 @@ export default function TestPage() {
       <nav className="fixed top-0 left-0 right-0 z-50">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-3 flex justify-between items-center">
           <Link href="/" className="font-display text-lg text-stone-800 tracking-tight font-bold">PaleTech</Link>
-          <div className="flex items-center gap-8">
-            <Link href="/" className="font-gothic text-[11px] text-stone-500 hover:text-stone-800 tracking-[0.2em] uppercase transition-colors duration-300">Home</Link>
-            <div className="w-1.5 h-1.5 rounded-full" style={{ background: 'linear-gradient(135deg, #60a5fa, #f9a8d4)' }} />
-          </div>
+          <Link href="/" className="font-gothic text-[11px] text-stone-500 hover:text-stone-800 tracking-[0.2em] uppercase transition-colors duration-300">Home</Link>
         </div>
       </nav>
 
