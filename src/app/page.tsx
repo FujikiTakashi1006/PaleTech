@@ -50,7 +50,7 @@ function CursorDot() {
     <>
       <div ref={dotRef} className="fixed w-2 h-2 rounded-full pointer-events-none z-[100] hidden md:block"
         style={{ background: '#60a5fa', transform: 'translate(-50%, -50%)' }} />
-      <div ref={ringRef} className="fixed w-10 h-10 rounded-full border pointer-events-none z-[100] hidden md:block"
+      <div ref={ringRef} className="fixed w-10 h-10 rounded-full border-2 pointer-events-none z-[100] hidden md:block"
         style={{ borderColor: 'rgba(167,139,250,0.3)', transform: 'translate(-50%, -50%)' }} />
     </>
   );
@@ -201,7 +201,7 @@ function HeroSection({ containerRef }: { containerRef: React.RefObject<HTMLDivEl
       <div className="absolute right-[-3vw] top-[18vh] w-[35vw] h-[35vw] rounded-full border" style={{ borderColor: 'rgba(249,168,212,0.08)' }} />
 
       <div className="max-w-[1440px] mx-auto w-full">
-        <p className="font-gothic text-[11px] tracking-[0.35em] text-stone-500 uppercase mb-5">PaleTech &mdash; Fukuoka, Japan</p>
+        <p className="font-gothic text-[11px] tracking-[0.35em] text-stone-500 uppercase mb-5">PaleTech &mdash; Fukuoka Tokyo</p>
         <h1 className="font-display text-[clamp(2.5rem,8vw,9rem)] leading-[1] text-stone-800 tracking-tight mb-8 font-extrabold inline-block">
           <span className="hero-title block opacity-0">Paleolithic</span>
           <span className="hero-title block opacity-0">Technology</span>
@@ -278,8 +278,8 @@ function PhilosophySection({ containerRef }: { containerRef: React.RefObject<HTM
 function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
   const ref = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(0);
+  const [detailOpen, setDetailOpen] = useState<number | null>(null);
 
-  // Track scroll progress within this tall section
   useEffect(() => {
     const section = ref.current;
     const container = containerRef.current;
@@ -308,74 +308,147 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
     { en: 'WEB APPS', ja: 'Web開発', desc: 'Next.js・React等のモダン技術で、スケーラブルなWebアプリケーションを開発します。', color: '#9b8ad4' },
   ];
 
-  // 0~0.1: "WE DO" fades in
-  // 0.1~1.0: each service gets equal segment
+  const ragSteps = [
+    { label: 'Step 01', title: 'ユーザーが質問する', desc: 'ユーザーが自然言語で質問を入力。AIが質問の意図を理解し、検索クエリに変換します。' },
+    { label: 'Step 02', title: 'ベクトル検索で関連文書を取得', desc: '質問をベクトル化し、データベース内の類似ドキュメントを高速に検索。最も関連性の高い情報源を特定します。' },
+    { label: 'Step 03', title: 'LLMが回答を生成', desc: '取得した文書をコンテキストとしてLLMに渡し、根拠に基づいた正確な回答を生成します。' },
+  ];
+
   const svcStart = 0.1;
   const seg = (1 - svcStart) / services.length;
-  const weDoOp = interp(progress, 0, 0.08, 0, 1);
-  const activeIndex = Math.min(Math.floor((progress - svcStart) / seg), services.length - 1);
 
   return (
     <div ref={ref} style={{ height: `${(services.length * 1.5 + 1) * 100}vh` }} className="relative">
-      <div className="sticky top-0 h-screen flex flex-col justify-center px-6 lg:px-12 overflow-hidden">
+      <div className="sticky top-0 h-screen flex overflow-hidden">
 
-        {/* "WE DO" + service name — single line */}
-        <div className="flex items-baseline gap-[1.2em] whitespace-nowrap overflow-hidden">
-          <span className="font-display text-[clamp(1.8rem,4vw,3.5rem)] font-extrabold text-stone-800 leading-none">
-            WE DEVELOP
-          </span>
+        {/* Left side */}
+        <div className="flex flex-col justify-center px-6 lg:px-12 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{ width: detailOpen !== null ? '45%' : '100%', flexShrink: 0 }}>
 
-          <div className="relative" style={{ height: 'clamp(1.8rem,4vw,3.5rem)' }}>
+          <div className="flex items-baseline gap-[1.2em] whitespace-nowrap overflow-hidden">
+            <span className="font-display text-[clamp(1.8rem,4vw,3.5rem)] font-extrabold text-stone-800 leading-none">
+              WE DEVELOP
+            </span>
+            <div className="relative" style={{ height: 'clamp(1.8rem,4vw,3.5rem)' }}>
+              {services.map((s, i) => {
+                const start = svcStart + i * seg;
+                const end = start + seg;
+                const inOp = interp(progress, start, start + seg * 0.25, 0, 1);
+                const inY = interp(progress, start, start + seg * 0.25, 40, 0);
+                const outOp = i < services.length - 1 ? interp(progress, end - seg * 0.2, end, 1, 0) : 1;
+                const outY = i < services.length - 1 ? interp(progress, end - seg * 0.2, end, 0, -30) : 0;
+                const op = Math.min(inOp, outOp);
+                if (op < 0.01) return null;
+                return (
+                  <span key={i} className="font-display absolute left-0 top-0 text-[clamp(1.8rem,4vw,3.5rem)] font-extrabold leading-none whitespace-nowrap"
+                    style={{ color: s.color, opacity: op, transform: `translateY(${inY + outY}px)` }}>
+                    {s.en}
+                  </span>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="mt-6 mb-8" style={{ height: '2px', width: `${interp(progress, 0.05, 0.2, 0, 80)}px`, background: 'linear-gradient(90deg, #7aa3ed, transparent)' }} />
+
+          <div className="relative" style={{ minHeight: '80px', maxWidth: '500px' }}>
             {services.map((s, i) => {
               const start = svcStart + i * seg;
               const end = start + seg;
-              const inOp = interp(progress, start, start + seg * 0.25, 0, 1);
-              const inY = interp(progress, start, start + seg * 0.25, 40, 0);
-              const outOp = i < services.length - 1 ? interp(progress, end - seg * 0.2, end, 1, 0) : 1;
-              const outY = i < services.length - 1 ? interp(progress, end - seg * 0.2, end, 0, -30) : 0;
-              const op = Math.min(inOp, outOp);
+              const dOp = interp(progress, start + seg * 0.15, start + seg * 0.4, 0, 1);
+              const dY = interp(progress, start + seg * 0.15, start + seg * 0.4, 15, 0);
+              const dExit = i < services.length - 1 ? interp(progress, end - seg * 0.2, end, 1, 0) : 1;
+              const op = Math.min(dOp, dExit);
               if (op < 0.01) return null;
               return (
-                <span key={i} className="font-display absolute left-0 top-0 text-[clamp(1.8rem,4vw,3.5rem)] font-extrabold leading-none whitespace-nowrap"
-                  style={{ color: s.color, opacity: op, transform: `translateY(${inY + outY}px)` }}>
-                  {s.en}
-                </span>
+                <div key={i} className="absolute top-0 left-0 right-0"
+                  style={{ opacity: op, transform: `translateY(${dY}px)` }}>
+                  <p className="font-gothic text-[13px] mb-2" style={{ color: s.color, fontWeight: 500 }}>{s.ja}</p>
+                  <p className="font-gothic text-[14px] text-stone-500 leading-[2] font-light mb-4">{s.desc}</p>
+                  <div className="flex justify-end">
+                    <button onClick={() => setDetailOpen(detailOpen === i ? null : i)}
+                      className="inline-flex items-center gap-2 font-gothic text-[11px] tracking-[0.1em] px-5 py-2.5 rounded-full transition-all duration-300 hover:opacity-80 cursor-pointer"
+                      style={{ background: s.color + '15', color: s.color }}>
+                      {detailOpen === i ? '閉じる' : '詳細を見る'}
+                      <svg className="w-3.5 h-3.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
+                        style={{ transform: detailOpen === i ? 'rotate(45deg)' : 'none' }}>
+                        {detailOpen === i
+                          ? <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                          : <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+                        }
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               );
             })}
           </div>
         </div>
 
-        {/* Accent line */}
-        <div className="mt-6 mb-8" style={{ height: '2px', width: `${interp(progress, 0.05, 0.2, 0, 80)}px`, background: 'linear-gradient(90deg, #60a5fa, transparent)' }} />
+        {/* Right detail panel */}
+        <div className="h-full border-l overflow-y-auto transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{
+            width: detailOpen !== null ? '55%' : '0%',
+            opacity: detailOpen !== null ? 1 : 0,
+            borderColor: detailOpen !== null ? 'rgba(0,0,0,0.06)' : 'transparent',
+          }}>
+          {detailOpen !== null && (
+            <div className="p-8 lg:p-12 h-full flex flex-col justify-center">
 
-        {/* Description */}
-        <div className="relative" style={{ minHeight: '80px', maxWidth: '500px' }}>
-          {services.map((s, i) => {
-            const start = svcStart + i * seg;
-            const end = start + seg;
-            const dOp = interp(progress, start + seg * 0.15, start + seg * 0.4, 0, 1);
-            const dY = interp(progress, start + seg * 0.15, start + seg * 0.4, 15, 0);
-            const dExit = i < services.length - 1 ? interp(progress, end - seg * 0.2, end, 1, 0) : 1;
-            const op = Math.min(dOp, dExit);
-            if (op < 0.01) return null;
-            return (
-              <div key={i} className="absolute top-0 left-0 right-0"
-                style={{ opacity: op, transform: `translateY(${dY}px)` }}>
-                <p className="font-gothic text-[13px] mb-2" style={{ color: s.color, fontWeight: 500 }}>{s.ja}</p>
-                <p className="font-gothic text-[14px] text-stone-500 leading-[2] font-light mb-4">{s.desc}</p>
-                <div className="flex justify-end">
-                  <a href={`/service#${s.en.toLowerCase().replace(' ', '-')}`}
-                    className="inline-flex items-center gap-2 font-gothic text-[11px] tracking-[0.1em] px-5 py-2.5 rounded-full transition-all duration-300 hover:opacity-80"
-                    style={{ background: s.color + '15', color: s.color }}>
-                    詳細を見る
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
-                    </svg>
-                  </a>
+              {detailOpen === 0 && (
+                <div>
+                  <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-8" style={{ color: services[0].color }}>How RAG Works</p>
+                  <div className="space-y-10">
+                    {ragSteps.map((step, i) => (
+                      <div key={i} className="flex gap-5">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-[11px] font-bold text-white"
+                          style={{ background: services[0].color }}>
+                          {i + 1}
+                        </div>
+                        <div>
+                          <p className="font-gothic text-[10px] tracking-[0.2em] uppercase mb-1.5" style={{ color: services[0].color }}>{step.label}</p>
+                          <h4 className="font-display text-lg text-stone-800 font-bold mb-2">{step.title}</h4>
+                          <p className="font-gothic text-[13px] text-stone-500 leading-[1.9] font-light">{step.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              )}
+
+              {detailOpen === 1 && (
+                <div>
+                  <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-8" style={{ color: services[1].color }}>Design Process</p>
+                  <div className="space-y-6">
+                    {['ヒアリング・リサーチ', 'ワイヤーフレーム設計', 'ビジュアルデザイン', 'コーディング・実装', 'テスト・公開'].map((step, i) => (
+                      <div key={i} className="flex items-center gap-5">
+                        <span className="font-display text-[28px] font-extrabold leading-none" style={{ color: services[1].color + '25' }}>{String(i + 1).padStart(2, '0')}</span>
+                        <p className="font-gothic text-[14px] text-stone-600 font-light">{step}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {detailOpen === 2 && (
+                <div>
+                  <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-8" style={{ color: services[2].color }}>Tech Stack</p>
+                  <div className="flex flex-wrap gap-3 mb-8">
+                    {['Next.js', 'React', 'TypeScript', 'Tailwind CSS', 'Node.js', 'PostgreSQL', 'Prisma', 'Vercel'].map((tech, i) => (
+                      <span key={i} className="px-4 py-2 rounded-full font-gothic text-[12px] border"
+                        style={{ borderColor: services[2].color + '25', color: services[2].color, background: services[2].color + '08' }}>
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                  <p className="font-gothic text-[14px] text-stone-500 leading-[2] font-light">
+                    フロントエンドからバックエンド、インフラまで。TypeScriptベースのモダンスタックで保守性と拡張性を両立します。
+                  </p>
+                </div>
+              )}
+
+            </div>
+          )}
         </div>
 
       </div>
