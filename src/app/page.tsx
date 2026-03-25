@@ -94,6 +94,10 @@ function useSmoothScroll(containerRef: React.RefObject<HTMLDivElement | null>) {
       const y = e.touches[0].clientY;
       const dy = lastTouchY - y;
       lastTouchY = y;
+      if (wheelInterceptRef.current) {
+        wheelInterceptRef.current(dy * 2);
+        return;
+      }
       target = Math.max(0, Math.min(target + dy * 2, maxScroll()));
     };
 
@@ -213,13 +217,13 @@ function HeroSection({ containerRef }: { containerRef: React.RefObject<HTMLDivEl
           <span className="hero-title block opacity-0">Paleolithic</span>
           <span className="hero-title block opacity-0">Technology</span>
         </h1>
-        <div className="hero-line h-px w-full max-w-sm mb-8" style={{ background: 'linear-gradient(90deg, #60a5fa, #f9a8d4, transparent)', transformOrigin: 'left', transform: 'scaleX(0)' }} />
+        <div className="hero-line h-[2px] w-full max-w-md mb-8" style={{ background: 'linear-gradient(90deg, #60a5fa, #f9a8d4, transparent)', transformOrigin: 'left', transform: 'scaleX(0)' }} />
         <p className="hero-sub font-gothic text-xl md:text-2xl lg:text-3xl text-stone-600 font-light tracking-wide max-w-xl" style={{ opacity: 0 }}>テクノロジーで、人を想う。</p>
-        <div className="scroll-hint absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center" style={{ opacity: 0 }}>
-          <div className="w-6 h-10 rounded-full border-2 border-stone-300/40 flex justify-center pt-2 mb-3">
-            <div className="w-1 h-2 rounded-full bg-stone-500/70 scroll-dot" />
+        <div className="scroll-hint absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3" style={{ opacity: 0 }}>
+          <div className="w-[1px] h-12 overflow-hidden">
+            <div className="w-full h-full bg-stone-600 scroll-line" />
           </div>
-          <span className="font-gothic text-[9px] tracking-[0.4em] text-stone-500/70 uppercase">Scroll</span>
+          <span className="font-gothic text-[9px] tracking-[0.4em] text-stone-600 uppercase">Scroll</span>
         </div>
       </div>
     </section>
@@ -254,7 +258,7 @@ function PhilosophySection({ containerRef }: { containerRef: React.RefObject<HTM
               <span className="block" style={{ opacity: title1Op, transform: `translateY(${title1Y}px)` }}>Human</span>
               <span className="block" style={{ opacity: title2Op, transform: `translateY(${title2Y}px)` }}>Nature.</span>
             </h2>
-            <div className="h-px w-24 mt-8"
+            <div className="h-[2px] w-72 mt-8"
               style={{ background: 'linear-gradient(90deg, #60a5fa, #f9a8d4, transparent)', transformOrigin: 'left', transform: `scaleX(${lineScale})` }} />
           </div>
           <div className="lg:col-span-6 lg:col-start-7 flex flex-col justify-center">
@@ -262,11 +266,11 @@ function PhilosophySection({ containerRef }: { containerRef: React.RefObject<HTM
               style={{ opacity: text1Op, transform: `translateY(${text1Y}px)` }}>
               SNS、ゲーム、際限のない通知——<br />
               テクノロジーはいつしか、<br />
-              人間から本来の幸せを奪う道具になった。
+              人間から幸せを奪う道具になった。
             </p>
             <p className="font-gothic text-[15px] text-stone-500 leading-[2.2] font-light"
               style={{ opacity: text2Op, transform: `translateY(${text2Y}px)` }}>
-              私たちは、AIテクノロジーでその流れを逆転させます。<br />
+              私たちは、より高度なテクノロジーでその流れを逆転させます。<br />
               人間本来の生き方を、現代の技術で取り戻す。
               それがPaleolithic × Technologyの意志です。
             </p>
@@ -480,11 +484,11 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
                 <div key={i} className="absolute top-0 left-0 right-0"
                   style={{ opacity: op, transform: `translateY(${dY}px)` }}>
                   <p className="font-gothic text-[13px] mb-2" style={{ color: s.color, fontWeight: 500 }}>{s.ja}</p>
-                  <p className="font-gothic text-[14px] text-stone-500 leading-[2] font-light mb-4">{s.desc}</p>
+                  <p className="font-gothic text-[14px] text-stone-700 leading-[2] font-light mb-4">{s.desc}</p>
                   <div className="flex justify-end">
                     <button onClick={() => setDetailOpen(detailOpen === i ? null : i)}
-                      className="inline-flex items-center gap-2 font-gothic text-[11px] tracking-[0.1em] px-5 py-2.5 rounded-full transition-all duration-300 hover:opacity-80 cursor-pointer"
-                      style={{ background: s.color + '15', color: s.color }}>
+                      className="inline-flex items-center gap-2 font-gothic text-[11px] tracking-[0.1em] px-5 py-2.5 rounded-full transition-all duration-300 hover:brightness-90 cursor-pointer"
+                      style={{ background: s.color, color: '#fff' }}>
                       {detailOpen === i ? '閉じる' : '詳細を見る'}
                       <svg className="w-3.5 h-3.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}
                         style={{ transform: detailOpen === i ? 'rotate(45deg)' : 'none' }}>
@@ -590,22 +594,45 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
 function CtaSection({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
   const ref = useRef<HTMLElement>(null);
   const p = useScrollProgress(ref, containerRef);
+  const [showForm, setShowForm] = useState(false);
+  const [formReady, setFormReady] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [sending, setSending] = useState(false);
 
-  const headOp = interp(p, 0.15, 0.4, 0, 1);
-  const headY = interp(p, 0.15, 0.4, 30, 0);
-  const subOp = interp(p, 0.3, 0.55, 0, 1);
-  const subY = interp(p, 0.3, 0.55, 20, 0);
-  const btnOp = interp(p, 0.45, 0.7, 0, 1);
-  const btnY = interp(p, 0.45, 0.7, 20, 0);
+  const headOp = showForm ? 0 : interp(p, 0.15, 0.4, 0, 1);
+  const headY = showForm ? 0 : interp(p, 0.15, 0.4, 30, 0);
+  const subOp = showForm ? 0 : interp(p, 0.3, 0.55, 0, 1);
+  const subY = showForm ? 0 : interp(p, 0.3, 0.55, 20, 0);
+  const btnOp = showForm ? 0 : interp(p, 0.45, 0.7, 0, 1);
+  const btnY = showForm ? 0 : interp(p, 0.45, 0.7, 20, 0);
   const bgTextOp = interp(p, 0.1, 0.5, 0, 0.03);
+
+  const openForm = () => {
+    setShowForm(true);
+    setTimeout(() => setFormReady(true), 50);
+  };
+
+  const handleBack = () => {
+    setFormReady(false);
+    setTimeout(() => { setShowForm(false); setSubmitted(false); }, 400);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSending(true);
+    setTimeout(() => { setSending(false); setSubmitted(true); }, 1200);
+  };
 
   return (
     <section ref={ref} className="section-page relative flex items-center justify-center px-6 lg:px-12 overflow-hidden">
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-        <span className="font-display text-[clamp(8rem,25vw,22rem)] text-stone-800 font-extrabold leading-none"
-          style={{ opacity: bgTextOp }}>Join</span>
+        <span className="font-display text-[clamp(5rem,16vw,14rem)] text-stone-800 font-extrabold leading-none"
+          style={{ opacity: bgTextOp }}>Contact</span>
       </div>
-      <div className="max-w-[1440px] mx-auto relative z-10 text-center">
+
+      {/* CTA content */}
+      <div className="max-w-[1440px] mx-auto relative z-10 text-center transition-all duration-400"
+        style={{ opacity: showForm ? 0 : 1, transform: showForm ? 'translateY(-20px)' : 'none', pointerEvents: showForm ? 'none' : 'auto', position: showForm ? 'absolute' : 'relative' }}>
         <h2 className="font-gothic text-3xl md:text-4xl lg:text-5xl text-stone-800 font-light leading-[1.7] mb-12"
           style={{ opacity: headOp, transform: `translateY(${headY}px)` }}>
           一緒に未来を<br />創りませんか？
@@ -616,19 +643,68 @@ function CtaSection({ containerRef }: { containerRef: React.RefObject<HTMLDivEle
         </p>
         <div className="flex flex-col sm:flex-row gap-5 justify-center"
           style={{ opacity: btnOp, transform: `translateY(${btnY}px)` }}>
-          <a href="/careers"
-            className="group relative px-10 py-4 font-gothic text-[12px] tracking-[0.15em] uppercase overflow-hidden rounded-full border text-stone-700 hover:text-white transition-colors duration-500"
-            style={{ borderColor: 'rgba(0,0,0,0.12)' }}>
-            <span className="relative z-10">採用情報を見る</span>
-            <div className="absolute inset-0 bg-stone-800 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
-          </a>
-          <a href="/contact"
+          <button onClick={openForm}
             className="group relative px-10 py-4 font-gothic text-[12px] tracking-[0.15em] uppercase overflow-hidden rounded-full bg-stone-800 text-white hover:text-stone-800 transition-colors duration-500">
             <span className="relative z-10">お問い合わせ</span>
             <div className="absolute inset-0 bg-stone-100 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
-          </a>
+          </button>
         </div>
       </div>
+
+      {/* Form */}
+      {showForm && (
+        <div className="max-w-[640px] w-full mx-auto relative z-10 transition-all duration-500 rounded-3xl px-8 py-10 md:px-10 md:py-12"
+          style={{ opacity: formReady ? 1 : 0, transform: formReady ? 'translateY(0)' : 'translateY(30px)', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(20px) saturate(1.4)', WebkitBackdropFilter: 'blur(20px) saturate(1.4)', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+          {!submitted ? (
+            <>
+              <div className="text-center mb-10">
+                <p className="font-gothic text-[11px] text-stone-400 tracking-[0.2em] uppercase mb-3">Contact</p>
+                <h3 className="font-gothic text-2xl md:text-3xl text-stone-800 font-light leading-[1.6] mb-2">お問い合わせ</h3>
+                <p className="font-gothic text-[13px] text-stone-400 leading-[1.8] font-light">
+                  ご質問・ご相談など、お気軽にどうぞ。
+                </p>
+              </div>
+              <form onSubmit={handleSubmit}>
+                <label className="block mb-4">
+                  <span className="font-gothic text-[11px] text-stone-500 tracking-[0.08em] uppercase block mb-2">お名前 / 会社名 *</span>
+                  <input required type="text" name="name"
+                    className="w-full bg-white/60 border border-stone-200/80 rounded-lg px-4 py-3 font-gothic text-[14px] text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 focus:bg-white transition-all"
+                    placeholder="山田 太郎 / 株式会社〇〇" />
+                </label>
+                <label className="block mb-4">
+                  <span className="font-gothic text-[11px] text-stone-500 tracking-[0.08em] uppercase block mb-2">メールアドレス *</span>
+                  <input required type="email" name="email"
+                    className="w-full bg-white/60 border border-stone-200/80 rounded-lg px-4 py-3 font-gothic text-[14px] text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 focus:bg-white transition-all"
+                    placeholder="email@example.com" />
+                </label>
+                <label className="block mb-6">
+                  <span className="font-gothic text-[11px] text-stone-500 tracking-[0.08em] uppercase block mb-2">ご相談内容 *</span>
+                  <textarea required name="message" rows={5}
+                    className="w-full bg-white/60 border border-stone-200/80 rounded-lg px-4 py-3 font-gothic text-[14px] text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 focus:bg-white transition-all resize-none"
+                    placeholder="ご相談内容をお書きください" />
+                </label>
+                <div className="text-center">
+                <button type="submit" disabled={sending}
+                  className="group relative px-14 py-4 font-gothic text-[12px] tracking-[0.15em] uppercase overflow-hidden rounded-full bg-stone-800 text-white hover:text-stone-800 transition-colors duration-500 disabled:opacity-60">
+                  <span className="relative z-10">{sending ? '送信中...' : '送信する'}</span>
+                  <div className="absolute inset-0 bg-stone-200 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
+                </button>
+                </div>
+              </form>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <div className="w-16 h-16 mx-auto mb-8 rounded-full bg-stone-200/60 flex items-center justify-center">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#57534e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+              </div>
+              <h3 className="font-gothic text-2xl text-stone-800 font-light mb-4">送信完了</h3>
+              <p className="font-gothic text-[13px] text-stone-400 leading-[1.8] font-light mb-10">
+                お問い合わせありがとうございます。<br />内容を確認の上、担当者よりご連絡いたします。
+              </p>
+            </div>
+          )}
+        </div>
+      )}
     </section>
   );
 }
@@ -645,34 +721,23 @@ function FooterSection({ containerRef }: { containerRef: React.RefObject<HTMLDiv
   const col3Y = interp(p, 0.3, 0.55, 30, 0);
 
   return (
-    <section ref={ref} className="section-page relative flex items-end overflow-hidden" style={{ background: '#e8e6e1' }}>
-      <div className="max-w-[1440px] mx-auto w-full px-6 lg:px-12 py-16">
-        <div className="grid lg:grid-cols-12 gap-12 mb-20">
-          <div className="lg:col-span-5" style={{ opacity: col1Op, transform: `translateY(${col1Y}px)` }}>
-            <Link href="/" className="font-display text-4xl text-stone-700 font-bold tracking-tight inline-block mb-6">PaleTech</Link>
-            <p className="font-gothic text-sm text-stone-500 leading-[2] font-light max-w-sm">
-              テクノロジーで取り戻す。<br />福岡からAIを活用し、ウェルビーイングな社会を創造する。
-            </p>
+    <section ref={ref} className="relative overflow-hidden px-6 lg:px-12 py-12" style={{ background: '#e8e6e1' }}>
+      <div className="max-w-[1440px] mx-auto w-full">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-8 mb-10" style={{ opacity: col1Op, transform: `translateY(${col1Y}px)` }}>
+          <div>
+            <Link href="/" className="font-display text-2xl text-stone-700 font-bold tracking-tight inline-block mb-3">PaleTech</Link>
+            <p className="font-gothic text-xs text-stone-500 leading-[1.8] font-light">テクノロジーで取り戻す。</p>
           </div>
-          <div className="lg:col-span-3 lg:col-start-7" style={{ opacity: col2Op, transform: `translateY(${col2Y}px)` }}>
-            <p className="font-gothic text-[11px] tracking-[0.2em] text-stone-400 uppercase mb-6">Navigate</p>
-            <div className="space-y-4">
-              {['About', 'Service', 'News', 'Careers', 'Contact'].map((item) => (
-                <div key={item}><Link href={`/${item.toLowerCase()}`} className="font-gothic text-sm text-stone-500 hover:text-stone-700 transition-colors duration-300">{item}</Link></div>
-              ))}
-            </div>
-          </div>
-          <div className="lg:col-span-3" style={{ opacity: col3Op, transform: `translateY(${col3Y}px)` }}>
-            <p className="font-gothic text-[11px] tracking-[0.2em] text-stone-400 uppercase mb-6">Legal</p>
-            <div className="space-y-4">
-              <div><Link href="/privacy" className="font-gothic text-sm text-stone-500 hover:text-stone-700 transition-colors duration-300">個人情報保護方針</Link></div>
-              <div><Link href="/ir" className="font-gothic text-sm text-stone-500 hover:text-stone-700 transition-colors duration-300">IR情報</Link></div>
-            </div>
+          <div className="flex gap-8" style={{ opacity: col2Op }}>
+            {['About', 'Service', 'Contact'].map((item) => (
+              <Link key={item} href={`/${item.toLowerCase()}`} className="font-gothic text-xs text-stone-500 hover:text-stone-700 transition-colors duration-300">{item}</Link>
+            ))}
+            <Link href="/privacy" className="font-gothic text-xs text-stone-500 hover:text-stone-700 transition-colors duration-300">Privacy</Link>
           </div>
         </div>
-        <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
-          <p className="font-gothic text-[11px] text-stone-400">&copy; {new Date().getFullYear()} PaleTech Inc.</p>
-          <p className="font-gothic text-[11px] text-stone-400/60 mt-2 md:mt-0">Fukuoka, Japan</p>
+        <div className="flex flex-col md:flex-row justify-between items-center pt-6 border-t" style={{ borderColor: 'rgba(0,0,0,0.04)' }}>
+          <p className="font-gothic text-[10px] text-stone-400">&copy; {new Date().getFullYear()} PaleTech Inc.</p>
+          <p className="font-gothic text-[10px] text-stone-400/50 mt-1 md:mt-0">Fukuoka, Japan</p>
         </div>
       </div>
     </section>
@@ -709,11 +774,11 @@ export default function TestPage() {
         .font-display { font-family: 'Zen Maru Gothic', sans-serif; }
         .font-gothic { font-family: 'Zen Maru Gothic', sans-serif; }
 
-        @keyframes scrollDot {
-          0%, 100% { transform: translateY(0); opacity: 0.6; }
-          50% { transform: translateY(12px); opacity: 0; }
+        @keyframes scrollLine {
+          0% { transform: translateY(-100%); }
+          100% { transform: translateY(100%); }
         }
-        .scroll-dot { animation: scrollDot 2s ease-in-out infinite; }
+        .scroll-line { animation: scrollLine 1.5s ease-in-out infinite; }
 
         .group\/card:hover {
           transform: translateY(-3px) !important;
@@ -747,7 +812,11 @@ export default function TestPage() {
       <nav className="fixed top-0 left-0 right-0 z-50">
         <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-3 flex justify-between items-center">
           <Link href="/" className="font-display text-lg text-stone-800 tracking-tight font-bold">PaleTech</Link>
-          <Link href="/" className="font-gothic text-[11px] text-stone-500 hover:text-stone-800 tracking-[0.2em] uppercase transition-colors duration-300">Home</Link>
+          <div className="flex items-center gap-8">
+            {['About', 'Service', 'News', 'Careers', 'Contact'].map((item) => (
+              <Link key={item} href={`/${item.toLowerCase()}`} className="font-gothic text-[11px] text-stone-400 tracking-[0.2em] uppercase transition-all duration-300 hover:bg-clip-text hover:text-transparent hover:bg-gradient-to-r hover:from-blue-500 hover:via-purple-500 hover:to-pink-400">{item}</Link>
+            ))}
+          </div>
         </div>
       </nav>
 
