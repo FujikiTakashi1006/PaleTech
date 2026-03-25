@@ -273,158 +273,14 @@ function PhilosophySection({ containerRef }: { containerRef: React.RefObject<HTM
 
 
 /* ─── RAG left-side illustration: auto-plays with anime.js when step triggers ─── */
-function RAGIllustration({ steps, progress, stepAppear }: {
-  steps: { id: string; color: string; icon: (op: number) => React.ReactNode }[];
-  progress: number;
-  stepAppear: number[];
-}) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [activeStep, setActiveStep] = useState(-1);
-  const [iconProgress, setIconProgress] = useState(0);
-  const animRef = useRef<ReturnType<typeof anime> | null>(null);
-
-  // Determine which step is active based on scroll progress
-  useEffect(() => {
-    let current = -1;
-    for (let i = stepAppear.length - 1; i >= 0; i--) {
-      if (progress >= stepAppear[i]) { current = i; break; }
-    }
-    if (current !== activeStep) {
-      setActiveStep(current);
-    }
-  }, [progress, stepAppear, activeStep]);
-
-  // When active step changes, auto-play animation
-  useEffect(() => {
-    if (activeStep < 0) return;
-
-    // Reset and animate icon progress 0→1 over 2 seconds
-    setIconProgress(0);
-    if (animRef.current) animRef.current.pause();
-
-    const obj = { val: 0 };
-    animRef.current = anime({
-      targets: obj,
-      val: 1,
-      duration: 2000,
-      easing: 'easeInOutCubic',
-      update: () => setIconProgress(obj.val),
-    });
-
-    return () => { if (animRef.current) animRef.current.pause(); };
-  }, [activeStep]);
-
-  return (
-    <div ref={containerRef} className="relative h-[180px] md:h-[220px]">
-      {steps.map((step, i) => {
-        const isActive = i === activeStep;
-        const isPast = i < activeStep;
-        const opacity = isActive ? 1 : isPast ? 0 : 0;
-
-        return (
-          <div key={step.id} className="absolute inset-0 flex items-center justify-center transition-opacity duration-500"
-            style={{ opacity, pointerEvents: isActive ? 'auto' : 'none' }}>
-            <div className="w-full max-w-[320px] h-full"
-              style={{ filter: `drop-shadow(0 4px 20px ${step.color}20)` }}>
-              {step.icon(isActive ? iconProgress : 0)}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/* ─── SVG icon that draws itself based on scroll progress ─── */
-function DrawIcon({ paths, progress, color }: { paths: string[]; progress: number; color: string }) {
-  return (
-    <svg viewBox="0 0 64 64" fill="none" className="w-16 h-16 lg:w-20 lg:h-20" xmlns="http://www.w3.org/2000/svg">
-      {paths.map((d, i) => {
-        const delay = i * 0.15;
-        const iconP = Math.max(0, Math.min(1, (progress - delay) / 0.6));
-        return (
-          <path key={i} d={d} stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"
-            style={{ strokeDasharray: 200, strokeDashoffset: 200 * (1 - iconP), transition: 'none' }} />
-        );
-      })}
-    </svg>
-  );
-}
 
 /* ─── Services Section: cards → click → selected expands, others slide away ─── */
 function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [activeService, setActiveService] = useState<number | null>(null);
-  const [transitioning, setTransitioning] = useState(false);
-  const [ragProgress, setRagProgress] = useState(0);
+  const [progress, setProgress] = useState(0);
 
-  const p = useScrollProgress(ref as React.RefObject<HTMLElement>, containerRef);
-
-  const labelOp = interp(p, 0.1, 0.3, 0, 1);
-  const labelX = interp(p, 0.1, 0.3, -20, 0);
-  const titleOp = interp(p, 0.15, 0.4, 0, 1);
-  const titleY = interp(p, 0.15, 0.4, 40, 0);
-
-  const services = [
-    { num: '01', title: 'RAG開発', en: 'RAG Development', desc: '検索拡張生成でAIを強化', color: '#60a5fa', hasDetail: true },
-    { num: '02', title: 'Webサイト制作', en: 'Web Design', desc: 'ブランドを体現するデザイン', color: '#f9a8d4', hasDetail: false },
-    { num: '03', title: 'Web開発', en: 'Web Development', desc: 'モダン技術でスケーラブルに', color: '#fbbf24', hasDetail: false },
-  ];
-
-  const ragSteps = [
-    {
-      id: 'query', label: 'Step 01', title: 'ユーザーが質問する',
-      desc: 'ユーザーが自然言語で質問を入力。AIが質問の意図を理解し、検索クエリに変換します。',
-      color: '#60a5fa',
-      icon: (op: number) => (
-        <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
-          <rect x="10" y="10" width="100" height="50" rx="12" stroke="#60a5fa" strokeWidth="1.5" style={{ strokeDasharray: 300, strokeDashoffset: 300 * (1 - op), opacity: op }} />
-          <line x1="26" y1="28" x2="74" y2="28" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" style={{ opacity: interp(op, 0.3, 0.6, 0, 1) }} />
-          <line x1="26" y1="38" x2="60" y2="38" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" style={{ opacity: interp(op, 0.4, 0.7, 0, 1) }} />
-          <rect x="62" y="34" width="2" height="10" fill="#60a5fa" rx="1" style={{ opacity: interp(op, 0.5, 0.8, 0, 1) }} />
-          <path d="M60 62 L60 76 M54 70 L60 76 L66 70" stroke="#60a5fa" strokeWidth="1.5" strokeLinecap="round" style={{ opacity: interp(op, 0.7, 1, 0, 1) }} />
-        </svg>
-      ),
-    },
-    {
-      id: 'search', label: 'Step 02', title: 'ベクトル検索で関連文書を取得',
-      desc: '質問をベクトル化し、データベース内の類似ドキュメントを高速に検索。最も関連性の高い情報源を特定します。',
-      color: '#60a5fa',
-      icon: (op: number) => (
-        <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
-          {[{cx:25,cy:20,d:0},{cx:45,cy:15,d:0.05},{cx:65,cy:25,d:0.1},{cx:85,cy:18,d:0.15},{cx:35,cy:45,d:0.2},{cx:55,cy:40,d:0.25},{cx:75,cy:50,d:0.3},{cx:95,cy:42,d:0.35},{cx:20,cy:65,d:0.4},{cx:45,cy:60,d:0.45}].map((dot, i) => (
-            <circle key={i} cx={dot.cx} cy={dot.cy} r={i===5?5:3} fill={i===5?'#60a5fa':'#60a5fa40'}
-              style={{opacity:interp(op,dot.d,dot.d+0.3,0,1),transform:`scale(${interp(op,dot.d,dot.d+0.3,0,1)})`,transformOrigin:`${dot.cx}px ${dot.cy}px`}}/>
-          ))}
-          {[{x:25,y:20},{x:65,y:25},{x:35,y:45},{x:75,y:50},{x:45,y:60}].map((pt,i)=>(
-            <line key={i} x1="55" y1="40" x2={pt.x} y2={pt.y} stroke="#60a5fa" strokeWidth="0.8" strokeDasharray="4 3" style={{opacity:interp(op,0.4+i*0.05,0.7+i*0.05,0,0.5)}}/>
-          ))}
-          <circle cx="82" cy="60" r="10" stroke="#60a5fa" strokeWidth="1.5" style={{strokeDasharray:80,strokeDashoffset:80*(1-interp(op,0.5,0.8,0,1))}}/>
-          <line x1="89" y1="67" x2="98" y2="76" stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" style={{opacity:interp(op,0.6,0.9,0,1)}}/>
-        </svg>
-      ),
-    },
-    {
-      id: 'generate', label: 'Step 03', title: 'LLMが回答を生成',
-      desc: '取得した文書をコンテキストとしてLLMに渡し、根拠に基づいた正確な回答を生成。ハルシネーションを抑制します。',
-      color: '#60a5fa',
-      icon: (op: number) => (
-        <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
-          <rect x="5" y="4" width="110" height="72" rx="10" stroke="#60a5fa" strokeWidth="1.5" style={{strokeDasharray:400,strokeDashoffset:400*(1-interp(op,0,0.25,0,1))}}/>
-          <circle cx="16" cy="16" r="3" fill="#60a5fa" style={{opacity:interp(op,0.1,0.3,0,1)}}/>
-          <text x="22" y="18" fill="#60a5fa" fontSize="6" fontFamily="monospace" fontWeight="bold" style={{opacity:interp(op,0.1,0.3,0,1)}}>AI</text>
-          {[{y:35,w:80,d:0.2},{y:47,w:65,d:0.45},{y:59,w:50,d:0.7}].map((line,i)=>{
-            const lo=interp(op,line.d,line.d+0.15,0,1);
-            return(<line key={i} x1="16" y1={line.y} x2={16+line.w*lo} y2={line.y} stroke="#60a5fa" strokeWidth="2" strokeLinecap="round" style={{opacity:lo*0.7}}/>);
-          })}
-        </svg>
-      ),
-    },
-  ];
-  const stepAppear = [0.08, 0.35, 0.62];
-
+  // Track scroll progress within this tall section
   useEffect(() => {
-    if (activeService !== 0) return;
     const section = ref.current;
     const container = containerRef.current;
     if (!section || !container) return;
@@ -433,9 +289,9 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
       if (!ticking) {
         requestAnimationFrame(() => {
           const rect = section.getBoundingClientRect();
-          const sectionH = section.offsetHeight;
-          const vh = window.innerHeight;
-          setRagProgress(Math.max(0, Math.min(1, -rect.top / (sectionH - vh))));
+          const h = section.offsetHeight;
+          const vh = container.clientHeight;
+          setProgress(Math.max(0, Math.min(1, -rect.top / (h - vh))));
           ticking = false;
         });
         ticking = true;
@@ -444,125 +300,86 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
     container.addEventListener('scroll', update, { passive: true });
     update();
     return () => container.removeEventListener('scroll', update);
-  }, [activeService, containerRef]);
+  }, [containerRef]);
 
-  // Phase: 'cards' → 'leaving' → 'detail' → 'returning' → 'cards'
-  const [phase, setPhase] = useState<'cards' | 'leaving' | 'detail' | 'returning'>('cards');
+  const services = [
+    { en: 'RAG', ja: 'RAG開発', desc: '検索拡張生成（RAG）を活用した高精度なAIシステムを構築。社内ナレッジの活用や業務効率化を実現します。', color: '#60a5fa' },
+    { en: 'WEBSITES', ja: 'Webサイト制作', desc: 'ブランドの世界観を体現する、美しく機能的なWebサイトをデザイン・制作します。', color: '#f9a8d4' },
+    { en: 'WEB APPS', ja: 'Web開発', desc: 'Next.js・React等のモダン技術で、スケーラブルなWebアプリケーションを開発します。', color: '#fbbf24' },
+  ];
 
-  const handleOpen = (i: number) => {
-    setActiveService(i);
-    setRagProgress(0);
-    setPhase('detail');
-  };
-
-  const handleClose = () => {
-    setActiveService(null);
-    setRagProgress(0);
-    setPhase('cards');
-  };
-
-  const isOpen = activeService !== null;
+  // 0~0.1: "WE DO" fades in
+  // 0.1~1.0: each service gets equal segment
+  const svcStart = 0.1;
+  const seg = (1 - svcStart) / services.length;
+  const weDoOp = interp(progress, 0, 0.08, 0, 1);
+  const activeIndex = Math.min(Math.floor((progress - svcStart) / seg), services.length - 1);
 
   return (
-    <div ref={ref} style={{ height: activeService === 0 ? '400vh' : '100vh', transition: 'height 0.6s cubic-bezier(0.22, 1, 0.36, 1)' }} className="relative">
-      <div className="sticky top-0 h-screen flex items-center px-6 lg:px-12 overflow-hidden">
-        <div className="max-w-[1440px] mx-auto w-full">
-          <p className="font-gothic text-[11px] tracking-[0.35em] text-stone-500 uppercase mb-6"
-            style={{ opacity: labelOp, transform: `translateX(${labelX}px)` }}>Services</p>
+    <div ref={ref} style={{ height: `${(services.length * 1.5 + 1) * 100}vh` }} className="relative">
+      <div className="sticky top-0 h-screen flex flex-col justify-center px-6 lg:px-12 overflow-hidden">
 
-          <h2 className="font-display text-5xl md:text-6xl lg:text-7xl text-stone-800 font-extrabold leading-[1.1] mb-10"
-            style={{ opacity: titleOp, transform: `translateY(${titleY}px)` }}>
-            What we do.
-          </h2>
+        {/* "WE DO" + service name — single line */}
+        <div className="flex items-baseline gap-[1.2em] whitespace-nowrap overflow-hidden">
+          <span className="font-display text-[clamp(1.8rem,4vw,3.5rem)] font-extrabold text-stone-800 leading-none">
+            WE DEVELOP
+          </span>
 
-          {/* ─── Cards row (fixed height) ─── */}
-          <div className="flex gap-3 mb-6" style={{ height: '180px' }}>
-            {services.map((service, i) => {
-              const cardOp = interp(p, 0.3 + i * 0.1, 0.55 + i * 0.1, 0, 1);
-              const cardY = interp(p, 0.3 + i * 0.1, 0.55 + i * 0.1, 40, 0);
-              const isSelected = activeService === i;
-              const isOther = isOpen && !isSelected;
-
+          <div className="relative" style={{ height: 'clamp(1.8rem,4vw,3.5rem)' }}>
+            {services.map((s, i) => {
+              const start = svcStart + i * seg;
+              const end = start + seg;
+              const inOp = interp(progress, start, start + seg * 0.25, 0, 1);
+              const inY = interp(progress, start, start + seg * 0.25, 40, 0);
+              const outOp = i < services.length - 1 ? interp(progress, end - seg * 0.2, end, 1, 0) : 1;
+              const outY = i < services.length - 1 ? interp(progress, end - seg * 0.2, end, 0, -30) : 0;
+              const op = Math.min(inOp, outOp);
+              if (op < 0.01) return null;
               return (
-                <div key={i}
-                  onClick={() => {
-                    if (phase === 'cards' && service.hasDetail) handleOpen(i);
-                    else if (isOther) { handleClose(); setTimeout(() => handleOpen(i), 600); }
-                    else if (isSelected) handleClose();
-                  }}
-                  className="group/card relative rounded-2xl border backdrop-blur-sm overflow-hidden cursor-pointer h-full"
-                  style={{
-                    flex: '1 1 33.33%',
-                    opacity: cardOp,
-                    transform: phase === 'cards' ? `translateY(${cardY}px)` : 'translateY(0)',
-                    borderColor: isSelected ? service.color + '50' : 'rgba(0,0,0,0.05)',
-                    background: isSelected ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.35)',
-                    transition: 'border-color 0.3s ease, background 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease',
-                  }}>
-                  {/* Selected indicator — left color bar */}
-                  <div className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-2xl transition-all duration-300"
-                    style={{ background: service.color, opacity: isSelected ? 1 : 0, transform: isSelected ? 'scaleY(1)' : 'scaleY(0)' }} />
-
-                  <div className="p-6 h-full flex flex-col justify-center">
-                    <span className="font-display text-[11px] tracking-[0.2em] uppercase mb-2 block transition-colors duration-300"
-                      style={{ color: service.color }}>{service.num}</span>
-                    <h3 className="font-display text-xl text-stone-800 font-bold mb-1">{service.title}</h3>
-                    <p className="font-gothic text-[11px] text-stone-500 tracking-[0.1em] mb-2">{service.en}</p>
-                    <p className="font-gothic text-xs text-stone-500 leading-[1.8] font-light">{service.desc}</p>
-                    {service.hasDetail && !isSelected && (
-                      <div className="flex items-center gap-2 mt-3 text-stone-300 group-hover/card:text-stone-500 transition-colors duration-300">
-                        <span className="font-gothic text-[10px] tracking-[0.15em] uppercase">詳しく見る</span>
-                        <svg className="w-3.5 h-3.5 group-hover/card:translate-x-1 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                <span key={i} className="font-display absolute left-0 top-0 text-[clamp(1.8rem,4vw,3.5rem)] font-extrabold leading-none whitespace-nowrap"
+                  style={{ color: s.color, opacity: op, transform: `translateY(${inY + outY}px)` }}>
+                  {s.en}
+                </span>
               );
             })}
           </div>
+        </div>
 
-          {/* ─── Detail area below cards ─── */}
-          <div style={{
-            maxHeight: isOpen ? '50vh' : '0',
-            opacity: isOpen ? 1 : 0,
-            transform: isOpen ? 'translateY(0)' : 'translateY(8px)',
-            overflow: 'hidden',
-            transition: 'max-height 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease, transform 0.4s ease',
-          }}>
-            {activeService === 0 && (
-              <div className="p-6 lg:p-8">
-                <div className="flex flex-col md:flex-row gap-6 md:gap-10 items-start">
-                  <div className="w-full md:w-5/12">
-                    <RAGIllustration steps={ragSteps} progress={ragProgress} stepAppear={stepAppear} />
-                  </div>
-                  <div className="w-full md:w-7/12 relative">
-                    <div className="absolute left-[7px] top-0 bottom-0 w-[2px] bg-stone-200/30 rounded-full hidden md:block">
-                      <div className="w-full rounded-full" style={{ height: `${Math.min(ragProgress * 130, 100)}%`, background: '#60a5fa' }} />
-                    </div>
-                    {ragSteps.map((step, si) => {
-                      const appear = interp(ragProgress, stepAppear[si], stepAppear[si] + 0.12, 0, 1);
-                      return (
-                        <div key={step.id} className="flex items-start gap-5 pb-5 md:ml-0"
-                          style={{ opacity: appear, transform: `translateY(${(1 - appear) * 25}px)` }}>
-                          <div className="hidden md:flex flex-shrink-0 w-4 h-4 rounded-full border-2 mt-0.5 items-center justify-center relative z-10"
-                            style={{ borderColor: step.color, background: appear > 0.5 ? step.color : 'white', transition: 'background 0.4s' }}>
-                            {appear > 0.5 && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                          </div>
-                          <div>
-                            <span className="font-gothic text-[10px] tracking-[0.3em] uppercase mb-1.5 block" style={{ color: step.color }}>{step.label}</span>
-                            <h3 className="font-display text-base md:text-lg text-stone-800 font-bold mb-1">{step.title}</h3>
-                            <p className="font-gothic text-[13px] text-stone-600 leading-[1.8] font-light max-w-sm">{step.desc}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
+        {/* Accent line */}
+        <div className="mt-6 mb-8" style={{ height: '2px', width: `${interp(progress, 0.05, 0.2, 0, 80)}px`, background: 'linear-gradient(90deg, #60a5fa, transparent)' }} />
+
+        {/* Description */}
+        <div className="relative" style={{ minHeight: '80px', maxWidth: '500px' }}>
+          {services.map((s, i) => {
+            const start = svcStart + i * seg;
+            const end = start + seg;
+            const dOp = interp(progress, start + seg * 0.15, start + seg * 0.4, 0, 1);
+            const dY = interp(progress, start + seg * 0.15, start + seg * 0.4, 15, 0);
+            const dExit = i < services.length - 1 ? interp(progress, end - seg * 0.2, end, 1, 0) : 1;
+            const op = Math.min(dOp, dExit);
+            if (op < 0.01) return null;
+            return (
+              <div key={i} className="absolute top-0 left-0 right-0"
+                style={{ opacity: op, transform: `translateY(${dY}px)` }}>
+                <p className="font-gothic text-[13px] mb-2" style={{ color: s.color, fontWeight: 500 }}>{s.ja}</p>
+                <p className="font-gothic text-[14px] text-stone-500 leading-[2] font-light">{s.desc}</p>
               </div>
-            )}
-          </div>
+            );
+          })}
+        </div>
+
+        {/* Right dots */}
+        <div className="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 flex flex-col gap-3">
+          {services.map((s, i) => {
+            const active = progress >= svcStart + i * seg && (i === services.length - 1 || progress < svcStart + (i + 1) * seg);
+            return (
+              <div key={i} className="transition-all duration-400" style={{
+                width: '5px', height: active ? '18px' : '5px', borderRadius: '3px',
+                background: active ? s.color : 'rgba(0,0,0,0.08)',
+                transition: 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
+              }} />
+            );
+          })}
         </div>
       </div>
     </div>

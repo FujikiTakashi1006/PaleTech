@@ -1,0 +1,188 @@
+<h2>Services Section Design Patterns</h2>
+<p class="subtitle">What we do. のデザイン — クリックで選択</p>
+
+<!-- E: Magazine Layout -->
+<div class="option" data-choice="e" onclick="toggleSelect(this)" style="margin-bottom: 24px;">
+  <div class="letter">E</div>
+  <div class="content" style="width: 100%;">
+    <h3>Magazine Layout — 非対称グリッド</h3>
+    <div style="background: #f0eeeb; border-radius: 12px; padding: 24px; margin-top: 12px;">
+      <div style="display: grid; grid-template-columns: 1.4fr 1fr; grid-template-rows: 1fr 1fr; gap: 10px; height: 220px;">
+        <div style="grid-row: 1/3; background: white; border-radius: 12px; padding: 20px; border: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
+          <div>
+            <span style="font-size: 10px; letter-spacing: 0.2em; color: #60a5fa;">01</span>
+            <p style="font-size: 22px; font-weight: 700; color: #292524; margin-top: 6px;">RAG開発</p>
+            <p style="font-size: 10px; color: #a8a29e; margin-top: 2px;">RAG Development</p>
+          </div>
+          <p style="font-size: 12px; color: #78716c; line-height: 1.8;">検索拡張生成でAIを強化。社内ナレッジの活用や業務効率化を実現。</p>
+          <div style="position: absolute; right: -30px; bottom: -30px; width: 120px; height: 120px; border-radius: 50%; background: radial-gradient(circle, rgba(96,165,250,0.1), transparent 70%);"></div>
+        </div>
+        <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid rgba(0,0,0,0.05);">
+          <span style="font-size: 10px; letter-spacing: 0.2em; color: #f9a8d4;">02</span>
+          <p style="font-size: 15px; font-weight: 700; color: #292524; margin-top: 4px;">Webサイト制作</p>
+          <p style="font-size: 10px; color: #a8a29e;">Web Design</p>
+        </div>
+        <div style="background: white; border-radius: 12px; padding: 16px; border: 1px solid rgba(0,0,0,0.05);">
+          <span style="font-size: 10px; letter-spacing: 0.2em; color: #fbbf24;">03</span>
+          <p style="font-size: 15px; font-weight: 700; color: #292524; margin-top: 4px;">Web開発</p>
+          <p style="font-size: 10px; color: #a8a29e;">Web Development</p>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top: 8px; font-size: 13px; color: #78716c;">RAGが大きく、他2つが小さい。エディトリアル感。RAGクリックで下に解説展開。</p>
+  </div>
+</div>
+
+<!-- F: Terminal -->
+<div class="option" data-choice="f" onclick="toggleSelect(this)" style="margin-bottom: 24px;">
+  <div class="letter">F</div>
+  <div class="content" style="width: 100%;">
+    <h3>Terminal / CLI Style</h3>
+    <div style="background: #1c1917; border-radius: 12px; padding: 24px; margin-top: 12px; font-family: 'SF Mono', monospace;">
+      <div style="background: #0c0a09; border-radius: 8px; padding: 20px; border: 1px solid rgba(255,255,255,0.06);">
+        <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+          <div style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></div>
+          <div style="width: 10px; height: 10px; border-radius: 50%; background: #fbbf24;"></div>
+          <div style="width: 10px; height: 10px; border-radius: 50%; background: #22c55e;"></div>
+        </div>
+        <p style="color: #60a5fa; font-size: 13px; margin-bottom: 12px;">$ paletech services --list</p>
+        <div style="border-left: 2px solid rgba(255,255,255,0.06); padding-left: 16px;">
+          <p style="color: #fafaf9; font-size: 13px; margin-bottom: 6px;"><span style="color: #60a5fa;">01</span> &nbsp;RAG開発 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;検索拡張生成でAIを強化 <span style="color: #22c55e; animation: blink 1s step-end infinite;">▊</span></p>
+          <p style="color: #a8a29e; font-size: 13px; margin-bottom: 6px;"><span style="color: #f9a8d4;">02</span> &nbsp;Webサイト制作 &nbsp;&nbsp;&nbsp;&nbsp;ブランドを体現するデザイン</p>
+          <p style="color: #a8a29e; font-size: 13px;"><span style="color: #fbbf24;">03</span> &nbsp;Web開発 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;モダン技術でスケーラブルに</p>
+        </div>
+      </div>
+      <style>@keyframes blink{50%{opacity:0}}</style>
+    </div>
+    <p style="margin-top: 8px; font-size: 13px; color: #78716c;">テック企業感。タイピングアニメで文字が出る。選択行がハイライト。</p>
+  </div>
+</div>
+
+<!-- H: Accordion Strips -->
+<div class="option" data-choice="h" onclick="toggleSelect(this)" style="margin-bottom: 24px;">
+  <div class="letter">H</div>
+  <div class="content" style="width: 100%;">
+    <h3>Accordion Strips — ホバーで伸縮</h3>
+    <div style="background: #f0eeeb; border-radius: 12px; padding: 24px; margin-top: 12px;">
+      <div style="display: flex; gap: 6px; height: 200px;">
+        <div style="flex: 3; background: white; border-radius: 12px; padding: 18px; border-left: 3px solid #60a5fa; display: flex; flex-direction: column; justify-content: space-between; transition: flex 0.4s;">
+          <div>
+            <span style="font-size: 10px; letter-spacing: 0.2em; color: #60a5fa;">01</span>
+            <p style="font-size: 20px; font-weight: 700; color: #292524; margin-top: 6px;">RAG開発</p>
+            <p style="font-size: 10px; color: #a8a29e;">RAG Development</p>
+          </div>
+          <p style="font-size: 11px; color: #78716c; line-height: 1.8;">検索拡張生成でAIを強化。社内ナレッジの活用や業務効率化を実現します。</p>
+        </div>
+        <div style="flex: 0.5; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; border-left: 3px solid #f9a8d4;">
+          <span style="writing-mode: vertical-rl; font-size: 11px; color: #78716c; letter-spacing: 0.1em;">Webサイト制作</span>
+        </div>
+        <div style="flex: 0.5; background: white; border-radius: 12px; display: flex; align-items: center; justify-content: center; border-left: 3px solid #fbbf24;">
+          <span style="writing-mode: vertical-rl; font-size: 11px; color: #78716c; letter-spacing: 0.1em;">Web開発</span>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top: 8px; font-size: 13px; color: #78716c;">縦ストリップがリアルタイムで伸縮。ホバーで広がり詳細表示。今のに近い。</p>
+  </div>
+</div>
+
+<!-- J: Spotlight -->
+<div class="option" data-choice="j" onclick="toggleSelect(this)" style="margin-bottom: 24px;">
+  <div class="letter">J</div>
+  <div class="content" style="width: 100%;">
+    <h3>Spotlight — カーソルで照らす</h3>
+    <div style="background: #292524; border-radius: 12px; padding: 24px; margin-top: 12px; position: relative; overflow: hidden;">
+      <div style="position: relative; height: 200px;">
+        <div style="position: absolute; top: 20px; left: 30px; opacity: 0.15;">
+          <p style="font-size: 48px; font-weight: 900; color: white; line-height: 1;">01</p>
+          <p style="font-size: 16px; font-weight: 700; color: white; margin-top: -4px;">RAG開発</p>
+          <p style="font-size: 10px; color: #a8a29e;">検索拡張生成でAIを強化</p>
+        </div>
+        <div style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); opacity: 0.15;">
+          <p style="font-size: 48px; font-weight: 900; color: white; line-height: 1;">02</p>
+          <p style="font-size: 16px; font-weight: 700; color: white; margin-top: -4px;">Webサイト制作</p>
+          <p style="font-size: 10px; color: #a8a29e;">ブランドを体現する</p>
+        </div>
+        <div style="position: absolute; top: 20px; right: 30px; opacity: 0.15;">
+          <p style="font-size: 48px; font-weight: 900; color: white; line-height: 1;">03</p>
+          <p style="font-size: 16px; font-weight: 700; color: white; margin-top: -4px;">Web開発</p>
+          <p style="font-size: 10px; color: #a8a29e;">モダン技術で</p>
+        </div>
+        <div style="position: absolute; top: 10px; left: 10px; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 65%); animation: spotMove 5s ease-in-out infinite alternate;"></div>
+      </div>
+      <style>@keyframes spotMove{0%{transform:translate(0,0)}50%{transform:translate(200px,20px)}100%{transform:translate(100px,10px)}}</style>
+    </div>
+    <p style="margin-top: 8px; font-size: 13px; color: #78716c;">暗い背景にサービスが散らばる。マウスのスポットライトで照らされた部分だけ見える。</p>
+  </div>
+</div>
+
+<!-- K: List Rows -->
+<div class="option" data-choice="k" onclick="toggleSelect(this)" style="margin-bottom: 24px;">
+  <div class="letter">K</div>
+  <div class="content" style="width: 100%;">
+    <h3>List Rows — 大きな番号 + 行リスト</h3>
+    <div style="background: #f0eeeb; border-radius: 12px; padding: 24px; margin-top: 12px;">
+      <div style="border-bottom: 1px solid rgba(0,0,0,0.06); padding: 16px 0; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <span style="font-size: 48px; font-weight: 900; color: rgba(96,165,250,0.2); line-height: 1; width: 70px;">01</span>
+          <div>
+            <p style="font-size: 20px; font-weight: 700; color: #292524;">RAG開発</p>
+            <p style="font-size: 11px; color: #a8a29e; letter-spacing: 0.1em;">RAG Development</p>
+          </div>
+        </div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="1.5"><path d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"/></svg>
+      </div>
+      <div style="border-bottom: 1px solid rgba(0,0,0,0.06); padding: 16px 0; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <span style="font-size: 48px; font-weight: 900; color: rgba(249,168,212,0.2); line-height: 1; width: 70px;">02</span>
+          <div>
+            <p style="font-size: 20px; font-weight: 700; color: #292524;">Webサイト制作</p>
+            <p style="font-size: 11px; color: #a8a29e; letter-spacing: 0.1em;">Web Design</p>
+          </div>
+        </div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="1.5"><path d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"/></svg>
+      </div>
+      <div style="padding: 16px 0; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <span style="font-size: 48px; font-weight: 900; color: rgba(251,191,36,0.2); line-height: 1; width: 70px;">03</span>
+          <div>
+            <p style="font-size: 20px; font-weight: 700; color: #292524;">Web開発</p>
+            <p style="font-size: 11px; color: #a8a29e; letter-spacing: 0.1em;">Web Development</p>
+          </div>
+        </div>
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="1.5"><path d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"/></svg>
+      </div>
+    </div>
+    <p style="margin-top: 8px; font-size: 13px; color: #78716c;">Apple的ミニマル。ホバーで行がスライドして光る。クリックで下に解説展開。</p>
+  </div>
+</div>
+
+<!-- I: Giant Numbers -->
+<div class="option" data-choice="i" onclick="toggleSelect(this)" style="margin-bottom: 24px;">
+  <div class="letter">I</div>
+  <div class="content" style="width: 100%;">
+    <h3>Giant Numbers — スクロールで組み上がる</h3>
+    <div style="background: #f0eeeb; border-radius: 12px; padding: 24px; margin-top: 12px;">
+      <div style="display: flex; gap: 32px; justify-content: center; align-items: center; padding: 20px 0;">
+        <div style="text-align: center;">
+          <span style="font-size: 72px; font-weight: 900; color: rgba(96,165,250,0.12); line-height: 1;">01</span>
+          <p style="font-size: 16px; font-weight: 700; color: #292524; margin-top: -6px;">RAG開発</p>
+          <div style="width: 30px; height: 2px; background: #60a5fa; margin: 8px auto;"></div>
+          <p style="font-size: 10px; color: #78716c;">検索拡張生成</p>
+        </div>
+        <div style="text-align: center;">
+          <span style="font-size: 72px; font-weight: 900; color: rgba(249,168,212,0.12); line-height: 1;">02</span>
+          <p style="font-size: 16px; font-weight: 700; color: #292524; margin-top: -6px;">Webサイト制作</p>
+          <div style="width: 30px; height: 2px; background: #f9a8d4; margin: 8px auto;"></div>
+          <p style="font-size: 10px; color: #78716c;">デザイン</p>
+        </div>
+        <div style="text-align: center;">
+          <span style="font-size: 72px; font-weight: 900; color: rgba(251,191,36,0.12); line-height: 1;">03</span>
+          <p style="font-size: 16px; font-weight: 700; color: #292524; margin-top: -6px;">Web開発</p>
+          <div style="width: 30px; height: 2px; background: #fbbf24; margin: 8px auto;"></div>
+          <p style="font-size: 10px; color: #78716c;">モダン技術</p>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top: 8px; font-size: 13px; color: #78716c;">巨大番号が背景。スクロールで文字がバラバラの位置から組み上がる。ミニマルだけどインパクト。</p>
+  </div>
+</div>

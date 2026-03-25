@@ -1,0 +1,207 @@
+<h2>Services Section Design Patterns</h2>
+<p class="subtitle">What we do. のセクションデザイン — クリックしてお気に入りを選んでください</p>
+
+<div class="cards">
+
+  <!-- E: Magazine Layout -->
+  <div class="card" data-choice="e" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #f0eeeb; height: 320px; padding: 24px; overflow: hidden; position: relative;">
+      <p style="font-size: 10px; letter-spacing: 0.3em; color: #a8a29e; margin-bottom: 12px;">SERVICES</p>
+      <p style="font-size: 32px; font-weight: 800; color: #292524; margin-bottom: 20px; line-height: 1.1;">What we do.</p>
+      <!-- Asymmetric grid -->
+      <div style="display: grid; grid-template-columns: 1.3fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; height: 200px;">
+        <!-- Big card -->
+        <div style="grid-row: 1/3; background: white; border-radius: 12px; padding: 16px; border: 1px solid rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden;">
+          <div>
+            <span style="font-size: 9px; letter-spacing: 0.2em; color: #60a5fa;">01</span>
+            <p style="font-size: 18px; font-weight: 700; color: #292524; margin-top: 4px;">RAG開発</p>
+            <p style="font-size: 9px; color: #a8a29e; margin-top: 2px;">RAG Development</p>
+          </div>
+          <p style="font-size: 10px; color: #78716c; line-height: 1.8;">検索拡張生成でAIを強化</p>
+          <div style="position: absolute; right: -20px; bottom: -20px; width: 100px; height: 100px; border-radius: 50%; background: radial-gradient(circle, rgba(96,165,250,0.08), transparent 70%);"></div>
+        </div>
+        <!-- Small top -->
+        <div style="background: white; border-radius: 12px; padding: 12px; border: 1px solid rgba(0,0,0,0.05);">
+          <span style="font-size: 9px; letter-spacing: 0.2em; color: #f9a8d4;">02</span>
+          <p style="font-size: 13px; font-weight: 700; color: #292524; margin-top: 2px;">Webサイト制作</p>
+          <p style="font-size: 9px; color: #a8a29e;">Web Design</p>
+        </div>
+        <!-- Small bottom -->
+        <div style="background: white; border-radius: 12px; padding: 12px; border: 1px solid rgba(0,0,0,0.05);">
+          <span style="font-size: 9px; letter-spacing: 0.2em; color: #fbbf24;">03</span>
+          <p style="font-size: 13px; font-weight: 700; color: #292524; margin-top: 2px;">Web開発</p>
+          <p style="font-size: 9px; color: #a8a29e;">Web Development</p>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>E: Magazine Layout</h3>
+      <p>RAGが大きく、他2つが小さい非対称グリッド。エディトリアル感。RAGに自然と目が行く。</p>
+    </div>
+  </div>
+
+  <!-- F: Terminal Style -->
+  <div class="card" data-choice="f" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #1c1917; height: 320px; padding: 24px; overflow: hidden; position: relative; font-family: monospace;">
+      <p style="font-size: 10px; letter-spacing: 0.3em; color: #78716c; margin-bottom: 12px;">SERVICES</p>
+      <p style="font-size: 28px; font-weight: 800; color: #fafaf9; margin-bottom: 20px; font-family: sans-serif;">What we do.</p>
+      <div style="background: #0c0a09; border-radius: 8px; padding: 16px; border: 1px solid rgba(255,255,255,0.06);">
+        <div style="display: flex; gap: 6px; margin-bottom: 12px;">
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #ef4444;"></div>
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #fbbf24;"></div>
+          <div style="width: 8px; height: 8px; border-radius: 50%; background: #22c55e;"></div>
+        </div>
+        <p style="color: #60a5fa; font-size: 11px; margin-bottom: 8px;">$ paletech services --list</p>
+        <p style="color: #a8a29e; font-size: 10px; margin-bottom: 4px;">┌─────────────────────────┐</p>
+        <p style="color: #fafaf9; font-size: 11px; margin-bottom: 2px;">│ <span style="color: #60a5fa;">01</span> RAG開発 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; → <span style="color: #22c55e; animation: blink 1s step-end infinite;">_</span></p>
+        <p style="color: #fafaf9; font-size: 11px; margin-bottom: 2px;">│ <span style="color: #f9a8d4;">02</span> Webサイト制作 &nbsp;&nbsp; →</p>
+        <p style="color: #fafaf9; font-size: 11px; margin-bottom: 4px;">│ <span style="color: #fbbf24;">03</span> Web開発 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; →</p>
+        <p style="color: #a8a29e; font-size: 10px;">└─────────────────────────┘</p>
+      </div>
+      <style>@keyframes blink{50%{opacity:0}}</style>
+    </div>
+    <div class="card-body">
+      <h3>F: Terminal / CLI Style</h3>
+      <p>ダーク背景のターミナル風。テック企業感が強い。タイピングアニメで文字が打ち出される。</p>
+    </div>
+  </div>
+
+  <!-- H: Accordion Strips -->
+  <div class="card" data-choice="h" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #f0eeeb; height: 320px; padding: 24px; overflow: hidden;">
+      <p style="font-size: 10px; letter-spacing: 0.3em; color: #a8a29e; margin-bottom: 12px;">SERVICES</p>
+      <p style="font-size: 28px; font-weight: 800; color: #292524; margin-bottom: 16px;">What we do.</p>
+      <div style="display: flex; gap: 4px; height: 180px;">
+        <!-- Strip 1 (expanded) -->
+        <div style="flex: 3; background: white; border-radius: 12px; padding: 14px; border-left: 3px solid #60a5fa; transition: flex 0.4s; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <span style="font-size: 9px; letter-spacing: 0.2em; color: #60a5fa;">01</span>
+            <p style="font-size: 16px; font-weight: 700; color: #292524; margin-top: 4px;">RAG開発</p>
+            <p style="font-size: 9px; color: #a8a29e;">RAG Development</p>
+          </div>
+          <p style="font-size: 10px; color: #78716c; line-height: 1.7;">検索拡張生成でAIを強化。社内ナレッジを活用。</p>
+        </div>
+        <!-- Strip 2 (collapsed) -->
+        <div style="flex: 0.6; background: white; border-radius: 12px; padding: 8px; display: flex; align-items: center; justify-content: center; border-left: 3px solid #f9a8d4;">
+          <span style="writing-mode: vertical-rl; font-size: 10px; color: #78716c; letter-spacing: 0.1em;">Webサイト制作</span>
+        </div>
+        <!-- Strip 3 (collapsed) -->
+        <div style="flex: 0.6; background: white; border-radius: 12px; padding: 8px; display: flex; align-items: center; justify-content: center; border-left: 3px solid #fbbf24;">
+          <span style="writing-mode: vertical-rl; font-size: 10px; color: #78716c; letter-spacing: 0.1em;">Web開発</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>H: Accordion Strips</h3>
+      <p>ホバーで伸縮する縦ストリップ。選択中は広がって詳細表示、他は細くなって縦書きタイトル。</p>
+    </div>
+  </div>
+
+  <!-- I: Number Build -->
+  <div class="card" data-choice="i" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #f0eeeb; height: 320px; padding: 24px; overflow: hidden; position: relative;">
+      <p style="font-size: 10px; letter-spacing: 0.3em; color: #a8a29e; margin-bottom: 12px;">SERVICES</p>
+      <p style="font-size: 28px; font-weight: 800; color: #292524; margin-bottom: 20px;">What we do.</p>
+      <div style="display: flex; gap: 20px; justify-content: center; align-items: center; height: 180px;">
+        <div style="text-align: center;">
+          <span style="font-size: 64px; font-weight: 900; color: rgba(96,165,250,0.15); line-height: 1;">01</span>
+          <p style="font-size: 13px; font-weight: 700; color: #292524; margin-top: -4px;">RAG開発</p>
+          <div style="width: 30px; height: 2px; background: #60a5fa; margin: 6px auto;"></div>
+          <p style="font-size: 9px; color: #78716c;">検索拡張生成</p>
+        </div>
+        <div style="text-align: center;">
+          <span style="font-size: 64px; font-weight: 900; color: rgba(249,168,212,0.15); line-height: 1;">02</span>
+          <p style="font-size: 13px; font-weight: 700; color: #292524; margin-top: -4px;">Webサイト制作</p>
+          <div style="width: 30px; height: 2px; background: #f9a8d4; margin: 6px auto;"></div>
+          <p style="font-size: 9px; color: #78716c;">デザイン</p>
+        </div>
+        <div style="text-align: center;">
+          <span style="font-size: 64px; font-weight: 900; color: rgba(251,191,36,0.15); line-height: 1;">03</span>
+          <p style="font-size: 13px; font-weight: 700; color: #292524; margin-top: -4px;">Web開発</p>
+          <div style="width: 30px; height: 2px; background: #fbbf24; margin: 6px auto;"></div>
+          <p style="font-size: 9px; color: #78716c;">モダン技術</p>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>I: Giant Numbers</h3>
+      <p>巨大な番号が背景に。スクロールで文字が組み上がる。ミニマルだけどインパクト。</p>
+    </div>
+  </div>
+
+  <!-- J: Spotlight -->
+  <div class="card" data-choice="j" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #292524; height: 320px; padding: 24px; overflow: hidden; position: relative;">
+      <p style="font-size: 10px; letter-spacing: 0.3em; color: #78716c; margin-bottom: 12px;">SERVICES</p>
+      <p style="font-size: 28px; font-weight: 800; color: #fafaf9; margin-bottom: 20px; font-family: sans-serif;">What we do.</p>
+      <div style="position: relative; height: 180px;">
+        <!-- Dim items -->
+        <div style="position: absolute; top: 20px; left: 20px; opacity: 0.2;">
+          <p style="font-size: 14px; font-weight: 700; color: white;">RAG開発</p>
+          <p style="font-size: 9px; color: #a8a29e;">検索拡張生成でAIを強化</p>
+        </div>
+        <div style="position: absolute; top: 80px; left: 140px; opacity: 0.2;">
+          <p style="font-size: 14px; font-weight: 700; color: white;">Webサイト制作</p>
+          <p style="font-size: 9px; color: #a8a29e;">ブランドを体現する</p>
+        </div>
+        <div style="position: absolute; top: 130px; right: 30px; opacity: 0.2;">
+          <p style="font-size: 14px; font-weight: 700; color: white;">Web開発</p>
+          <p style="font-size: 9px; color: #a8a29e;">モダン技術で</p>
+        </div>
+        <!-- Spotlight circle -->
+        <div style="position: absolute; top: 10px; left: 10px; width: 130px; height: 130px; border-radius: 50%; background: radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%); animation: spotMove 6s ease-in-out infinite alternate;"></div>
+        <style>@keyframes spotMove{0%{transform:translate(0,0)}50%{transform:translate(100px,50px)}100%{transform:translate(50px,30px)}}</style>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>J: Spotlight</h3>
+      <p>暗い背景にサービスが散らばる。カーソルのスポットライトで照らされた部分だけ見える。探索的なインタラクション。</p>
+    </div>
+  </div>
+
+  <!-- NEW: K: Scroll Ticker -->
+  <div class="card" data-choice="k" onclick="toggleSelect(this)">
+    <div class="card-image" style="background: #f0eeeb; height: 320px; padding: 24px; overflow: hidden; position: relative;">
+      <p style="font-size: 10px; letter-spacing: 0.3em; color: #a8a29e; margin-bottom: 12px;">SERVICES</p>
+      <p style="font-size: 28px; font-weight: 800; color: #292524; margin-bottom: 16px;">What we do.</p>
+      <!-- Horizontal scroll ticker -->
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="border-bottom: 1px solid rgba(0,0,0,0.06); padding: 14px 0; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 40px; font-weight: 900; color: rgba(96,165,250,0.2); line-height: 1; width: 60px;">01</span>
+            <div>
+              <p style="font-size: 18px; font-weight: 700; color: #292524;">RAG開発</p>
+              <p style="font-size: 10px; color: #a8a29e; letter-spacing: 0.1em;">RAG Development</p>
+            </div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="1.5"><path d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"/></svg>
+        </div>
+        <div style="border-bottom: 1px solid rgba(0,0,0,0.06); padding: 14px 0; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 40px; font-weight: 900; color: rgba(249,168,212,0.2); line-height: 1; width: 60px;">02</span>
+            <div>
+              <p style="font-size: 18px; font-weight: 700; color: #292524;">Webサイト制作</p>
+              <p style="font-size: 10px; color: #a8a29e; letter-spacing: 0.1em;">Web Design</p>
+            </div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="1.5"><path d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"/></svg>
+        </div>
+        <div style="padding: 14px 0; display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <span style="font-size: 40px; font-weight: 900; color: rgba(251,191,36,0.2); line-height: 1; width: 60px;">03</span>
+            <div>
+              <p style="font-size: 18px; font-weight: 700; color: #292524;">Web開発</p>
+              <p style="font-size: 10px; color: #a8a29e; letter-spacing: 0.1em;">Web Development</p>
+            </div>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a8a29e" stroke-width="1.5"><path d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75"/></svg>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>K: List Rows + Giant Numbers</h3>
+      <p>縦リスト型。大きな番号 + タイトルが行で並ぶ。ホバーで行が光る。Apple的なミニマル。クリックで下に展開。</p>
+    </div>
+  </div>
+
+</div>
