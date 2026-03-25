@@ -303,9 +303,9 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
   }, [containerRef]);
 
   const services = [
-    { en: 'RAG', ja: 'RAG開発', desc: '検索拡張生成（RAG）を活用した高精度なAIシステムを構築。社内ナレッジの活用や業務効率化を実現します。', color: '#60a5fa' },
-    { en: 'WEBSITES', ja: 'Webサイト制作', desc: 'ブランドの世界観を体現する、美しく機能的なWebサイトをデザイン・制作します。', color: '#f9a8d4' },
-    { en: 'WEB APPS', ja: 'Web開発', desc: 'Next.js・React等のモダン技術で、スケーラブルなWebアプリケーションを開発します。', color: '#fbbf24' },
+    { en: 'RAG', ja: 'RAG開発', desc: 'Retrieval-Augmented Generation（検索拡張生成）を活用した高精度なAIシステムを構築。社内ナレッジの活用や業務効率化を実現します。', color: '#7aa3ed' },
+    { en: 'WEBSITES', ja: 'Webサイト制作', desc: 'ブランドの世界観を体現する、美しく機能的なWebサイトをデザイン・制作します。', color: '#5fbf96' },
+    { en: 'WEB APPS', ja: 'Web開発', desc: 'Next.js・React等のモダン技術で、スケーラブルなWebアプリケーションを開発します。', color: '#9b8ad4' },
   ];
 
   // 0~0.1: "WE DO" fades in
@@ -362,25 +362,22 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
               <div key={i} className="absolute top-0 left-0 right-0"
                 style={{ opacity: op, transform: `translateY(${dY}px)` }}>
                 <p className="font-gothic text-[13px] mb-2" style={{ color: s.color, fontWeight: 500 }}>{s.ja}</p>
-                <p className="font-gothic text-[14px] text-stone-500 leading-[2] font-light">{s.desc}</p>
+                <p className="font-gothic text-[14px] text-stone-500 leading-[2] font-light mb-4">{s.desc}</p>
+                <div className="flex justify-end">
+                  <a href={`/service#${s.en.toLowerCase().replace(' ', '-')}`}
+                    className="inline-flex items-center gap-2 font-gothic text-[11px] tracking-[0.1em] px-5 py-2.5 rounded-full transition-all duration-300 hover:opacity-80"
+                    style={{ background: s.color + '15', color: s.color }}>
+                    詳細を見る
+                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6.75-6.75M19.5 12l-6.75 6.75" />
+                    </svg>
+                  </a>
+                </div>
               </div>
             );
           })}
         </div>
 
-        {/* Right dots */}
-        <div className="absolute right-4 lg:right-8 top-1/2 -translate-y-1/2 flex flex-col gap-3">
-          {services.map((s, i) => {
-            const active = progress >= svcStart + i * seg && (i === services.length - 1 || progress < svcStart + (i + 1) * seg);
-            return (
-              <div key={i} className="transition-all duration-400" style={{
-                width: '5px', height: active ? '18px' : '5px', borderRadius: '3px',
-                background: active ? s.color : 'rgba(0,0,0,0.08)',
-                transition: 'all 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
-              }} />
-            );
-          })}
-        </div>
       </div>
     </div>
   );
