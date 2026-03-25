@@ -59,6 +59,7 @@ function CursorDot() {
 /* ─── Smooth scroll (lerp only, no snap) ─── */
 // wheelInterceptRef: if set to a function, wheel events are forwarded there instead of scrolling
 const wheelInterceptRef = { current: null as ((deltaY: number) => void) | null };
+const scrollToRef = { current: null as ((pos: number) => void) | null };
 
 function useSmoothScroll(containerRef: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
@@ -101,12 +102,17 @@ function useSmoothScroll(containerRef: React.RefObject<HTMLDivElement | null>) {
       target = Math.max(0, Math.min(target + dy * 2, maxScroll()));
     };
 
+    scrollToRef.current = (pos: number) => {
+      target = Math.max(0, Math.min(pos, maxScroll()));
+    };
+
     el.addEventListener('wheel', handleWheel, { passive: false });
     el.addEventListener('touchstart', handleTouchStart, { passive: true });
     el.addEventListener('touchmove', handleTouchMove, { passive: false });
     rafId = requestAnimationFrame(lerp);
 
     return () => {
+      scrollToRef.current = null;
       el.removeEventListener('wheel', handleWheel);
       el.removeEventListener('touchstart', handleTouchStart);
       el.removeEventListener('touchmove', handleTouchMove);
@@ -617,11 +623,46 @@ function CtaSection({ containerRef }: { containerRef: React.RefObject<HTMLDivEle
     setTimeout(() => { setShowForm(false); setSubmitted(false); }, 400);
   };
 
+  const formContainerRef = useRef<HTMLDivElement>(null);
+  const successRef = useRef<HTMLDivElement>(null);
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setSending(true);
-    setTimeout(() => { setSending(false); setSubmitted(true); }, 1200);
+
+    // Phase 1: shrink form
+    setTimeout(() => {
+      setSending(false);
+      setSubmitted(true);
+    }, 800);
   };
+
+  useEffect(() => {
+    if (!submitted || !successRef.current) return;
+    const el = successRef.current;
+    const circle = el.querySelector('.check-circle') as SVGCircleElement;
+    const check = el.querySelector('.check-path') as SVGPathElement;
+    const texts = el.querySelectorAll('.success-text');
+
+    // draw circle
+    if (circle) {
+      const len = circle.getTotalLength();
+      circle.style.strokeDasharray = `${len}`;
+      circle.style.strokeDashoffset = `${len}`;
+      anime({ targets: circle, strokeDashoffset: [len, 0], duration: 600, easing: 'easeInOutCubic', delay: 100 });
+    }
+    // draw check
+    if (check) {
+      const len = check.getTotalLength();
+      check.style.strokeDasharray = `${len}`;
+      check.style.strokeDashoffset = `${len}`;
+      anime({ targets: check, strokeDashoffset: [len, 0], duration: 400, easing: 'easeOutCubic', delay: 550 });
+    }
+    // scale pop the svg container
+    anime({ targets: el.querySelector('.check-icon'), scale: [0, 1], duration: 500, easing: 'easeOutBack', delay: 50 });
+    // fade in texts staggered
+    anime({ targets: texts, opacity: [0, 1], translateY: [15, 0], duration: 500, delay: anime.stagger(120, { start: 800 }), easing: 'easeOutCubic' });
+  }, [submitted]);
 
   return (
     <section ref={ref} className="section-page relative flex items-center justify-center px-6 lg:px-12 overflow-hidden">
@@ -644,24 +685,22 @@ function CtaSection({ containerRef }: { containerRef: React.RefObject<HTMLDivEle
         <div className="flex flex-col sm:flex-row gap-5 justify-center"
           style={{ opacity: btnOp, transform: `translateY(${btnY}px)` }}>
           <button onClick={openForm}
-            className="group relative px-10 py-4 font-gothic text-[12px] tracking-[0.15em] uppercase overflow-hidden rounded-full bg-stone-800 text-white hover:text-stone-800 transition-colors duration-500">
-            <span className="relative z-10">お問い合わせ</span>
-            <div className="absolute inset-0 bg-stone-100 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
+            className="px-10 py-4 font-gothic text-[12px] tracking-[0.15em] uppercase rounded-full bg-stone-800 text-white hover:bg-stone-600 transition-all duration-300 hover:shadow-lg">
+            お問い合わせ
           </button>
         </div>
       </div>
 
       {/* Form */}
       {showForm && (
-        <div className="max-w-[640px] w-full mx-auto relative z-10 transition-all duration-500 rounded-3xl px-8 py-10 md:px-10 md:py-12"
+        <div className="max-w-[780px] w-full mx-auto relative z-10 transition-all duration-500 rounded-3xl px-8 py-10 md:px-12 md:py-12"
           style={{ opacity: formReady ? 1 : 0, transform: formReady ? 'translateY(0)' : 'translateY(30px)', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(20px) saturate(1.4)', WebkitBackdropFilter: 'blur(20px) saturate(1.4)', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
           {!submitted ? (
             <>
-              <div className="text-center mb-10">
-                <p className="font-gothic text-[11px] text-stone-400 tracking-[0.2em] uppercase mb-3">Contact</p>
-                <h3 className="font-gothic text-2xl md:text-3xl text-stone-800 font-light leading-[1.6] mb-2">お問い合わせ</h3>
-                <p className="font-gothic text-[13px] text-stone-400 leading-[1.8] font-light">
-                  ご質問・ご相談など、お気軽にどうぞ。
+              <div className="text-center mb-6">
+                <h3 className="font-gothic text-xl text-stone-800 font-light mb-1">お問い合わせ</h3>
+                <p className="font-gothic text-[12px] text-stone-400 font-light">
+                  お気軽にどうぞ。
                 </p>
               </div>
               <form onSubmit={handleSubmit}>
@@ -679,27 +718,36 @@ function CtaSection({ containerRef }: { containerRef: React.RefObject<HTMLDivEle
                 </label>
                 <label className="block mb-6">
                   <span className="font-gothic text-[11px] text-stone-500 tracking-[0.08em] uppercase block mb-2">ご相談内容 *</span>
-                  <textarea required name="message" rows={5}
+                  <textarea required name="message" rows={8}
                     className="w-full bg-white/60 border border-stone-200/80 rounded-lg px-4 py-3 font-gothic text-[14px] text-stone-700 placeholder-stone-300 outline-none focus:border-stone-400 focus:bg-white transition-all resize-none"
                     placeholder="ご相談内容をお書きください" />
                 </label>
                 <div className="text-center">
                 <button type="submit" disabled={sending}
-                  className="group relative px-14 py-4 font-gothic text-[12px] tracking-[0.15em] uppercase overflow-hidden rounded-full bg-stone-800 text-white hover:text-stone-800 transition-colors duration-500 disabled:opacity-60">
-                  <span className="relative z-10">{sending ? '送信中...' : '送信する'}</span>
-                  <div className="absolute inset-0 bg-stone-200 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left rounded-full" />
+                  className="px-14 py-4 font-gothic text-[12px] tracking-[0.15em] uppercase rounded-full bg-stone-800 text-white hover:bg-stone-600 transition-all duration-300 hover:shadow-lg disabled:opacity-60 disabled:hover:bg-stone-800"
+                  style={{ minWidth: sending ? 56 : undefined, transition: 'all 0.4s cubic-bezier(0.4,0,0.2,1)' }}>
+                  {sending ? (
+                    <span className="flex items-center justify-center gap-1.5">
+                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                    </span>
+                  ) : '送信する'}
                 </button>
                 </div>
               </form>
             </>
           ) : (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 mx-auto mb-8 rounded-full bg-stone-200/60 flex items-center justify-center">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#57534e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <div ref={successRef} className="text-center py-12">
+              <div className="check-icon mx-auto mb-8" style={{ width: 80, height: 80 }}>
+                <svg viewBox="0 0 80 80" fill="none" width="80" height="80">
+                  <circle className="check-circle" cx="40" cy="40" r="36" stroke="#78716c" strokeWidth="2" fill="none" />
+                  <path className="check-path" d="M24 40l10 10 22-22" stroke="#78716c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
               </div>
-              <h3 className="font-gothic text-2xl text-stone-800 font-light mb-4">送信完了</h3>
-              <p className="font-gothic text-[13px] text-stone-400 leading-[1.8] font-light mb-10">
-                お問い合わせありがとうございます。<br />内容を確認の上、担当者よりご連絡いたします。
+              <h3 className="success-text font-gothic text-2xl text-stone-800 font-light mb-3" style={{ opacity: 0 }}>送信完了</h3>
+              <p className="success-text font-gothic text-[13px] text-stone-400 leading-[1.8] font-light" style={{ opacity: 0 }}>
+                ありがとうございます。<br />担当者よりご連絡いたします。
               </p>
             </div>
           )}
@@ -750,7 +798,7 @@ function FooterSection({ containerRef }: { containerRef: React.RefObject<HTMLDiv
 export default function TestPage() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentSection, setCurrentSection] = useState(0);
-  const SECTION_COUNT = 10;
+  const SECTION_COUNT = 5;
 
   useSmoothScroll(containerRef);
 
@@ -813,19 +861,37 @@ export default function TestPage() {
         <div className="max-w-[1440px] mx-auto px-6 lg:px-12 py-3 flex justify-between items-center">
           <Link href="/" className="font-display text-lg text-stone-800 tracking-tight font-bold">PaleTech</Link>
           <div className="flex items-center gap-8">
-            {['About', 'Service', 'News', 'Careers', 'Contact'].map((item) => (
-              <Link key={item} href={`/${item.toLowerCase()}`} className="font-gothic text-[11px] text-stone-400 tracking-[0.2em] uppercase transition-all duration-300 hover:bg-clip-text hover:text-transparent hover:bg-gradient-to-r hover:from-blue-500 hover:via-purple-500 hover:to-pink-400">{item}</Link>
+            {[
+              { label: 'Home', id: 'hero' },
+              { label: 'Philosophy', id: 'philosophy' },
+              { label: 'Service', id: 'services' },
+              { label: 'Contact', id: 'contact' },
+            ].map((item) => (
+              <button key={item.id}
+                onClick={() => {
+                  const el = document.getElementById(item.id);
+                  const container = containerRef.current;
+                  if (el && container && scrollToRef.current) {
+                    const containerRect = container.getBoundingClientRect();
+                    const elRect = el.getBoundingClientRect();
+                    const offset = elRect.top - containerRect.top + container.scrollTop;
+                    scrollToRef.current(offset);
+                  }
+                }}
+                className="font-gothic text-[11px] text-stone-400 tracking-[0.2em] uppercase transition-all duration-300 hover:bg-clip-text hover:text-transparent hover:bg-gradient-to-r hover:from-blue-500 hover:via-purple-500 hover:to-pink-400 cursor-pointer bg-transparent border-none">
+                {item.label}
+              </button>
             ))}
           </div>
         </div>
       </nav>
 
       <div ref={containerRef} className="scroll-container" style={{ background: '#f0eeeb' }}>
-        <HeroSection containerRef={containerRef} />
-        <PhilosophySection containerRef={containerRef} />
-        <ServicesSection containerRef={containerRef} />
-        <CtaSection containerRef={containerRef} />
-        <FooterSection containerRef={containerRef} />
+        <div id="hero"><HeroSection containerRef={containerRef} /></div>
+        <div id="philosophy"><PhilosophySection containerRef={containerRef} /></div>
+        <div id="services"><ServicesSection containerRef={containerRef} /></div>
+        <div id="cta"><CtaSection containerRef={containerRef} /></div>
+        <div id="contact"><FooterSection containerRef={containerRef} /></div>
       </div>
     </>
   );
