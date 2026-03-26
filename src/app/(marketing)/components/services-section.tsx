@@ -6,6 +6,8 @@ import { wheelInterceptRef } from '../lib/scroll-state';
 import { interp } from '@/lib/animation/interp';
 import { RAGIllustration } from './rag-illustration';
 import { StepTimeline } from './step-timeline';
+import { ScrollDemo } from './scroll-demo';
+import { MicroInteractionDemo } from './micro-interaction-demo';
 
 export function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -13,8 +15,10 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
   const [detailOpen, setDetailOpen] = useState<number | null>(null);
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [detailContentVisible, setDetailContentVisible] = useState(false);
-  const [ragStep, setRagStep] = useState(-1); // -1=intro, 0=step1, 1=step2, 2=step3
+  const [ragStep, setRagStep] = useState(-1);
   const ragStepRef = useRef(-1);
+  const [webStep, setWebStep] = useState(-1);
+  const webStepRef = useRef(-1);
   const lockedUntilRef = useRef(0);
   const scrollAccumRef = useRef(0);
 
@@ -59,49 +63,65 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
   }, [detailOpen]);
 
   useEffect(() => {
-    if (detailOpen !== 0) {
+    if (detailOpen === null) {
       wheelInterceptRef.current = null;
-      if (detailOpen === null) {
-        ragStepRef.current = -1;
-        setRagStep(-1);
-      }
+      ragStepRef.current = -1;
+      setRagStep(-1);
+      webStepRef.current = -1;
+      setWebStep(-1);
       return;
     }
+    if (detailOpen !== 0 && detailOpen !== 1) {
+      wheelInterceptRef.current = null;
+      return;
+    }
+    if (detailOpen !== 0) return;
 
     ragStepRef.current = -1;
     setRagStep(-1);
-    lockedUntilRef.current = 0;
     scrollAccumRef.current = 0;
 
-    const TOTAL_STEPS = 3; // step 0, 1, 2
-    const SCROLL_THRESHOLD = 150; // px of scroll to trigger next step
-    const LOCK_DURATION = 2200; // ms to wait for SVG animation
+    const TOTAL_ANIM_STEPS = 3; // step 0, 1, 2 (animated steps)
+    const RESULT_STEP = 3; // final results screen
+    const SCROLL_THRESHOLD = 150;
+    const LOCK_DURATION = 2200;
 
     wheelInterceptRef.current = (deltaY: number) => {
-      // If locked (SVG animation playing), ignore scroll
       if (Date.now() < lockedUntilRef.current) return;
 
       scrollAccumRef.current += deltaY;
 
-      // Forward: next step
-      if (scrollAccumRef.current > SCROLL_THRESHOLD && ragStepRef.current < TOTAL_STEPS - 1) {
+      // Forward
+      if (scrollAccumRef.current > SCROLL_THRESHOLD) {
         scrollAccumRef.current = 0;
-        ragStepRef.current += 1;
-        setRagStep(ragStepRef.current);
-        lockedUntilRef.current = Date.now() + LOCK_DURATION;
+        if (ragStepRef.current < TOTAL_ANIM_STEPS - 1) {
+          // Next animated step
+          ragStepRef.current += 1;
+          setRagStep(ragStepRef.current);
+          lockedUntilRef.current = Date.now() + LOCK_DURATION;
+        } else if (ragStepRef.current === TOTAL_ANIM_STEPS - 1) {
+          // After last animated step → results screen (no lock)
+          ragStepRef.current = RESULT_STEP;
+          setRagStep(RESULT_STEP);
+        }
         return;
       }
 
-      // Backward: previous step
-      if (scrollAccumRef.current < -SCROLL_THRESHOLD && ragStepRef.current >= 0) {
+      // Backward
+      if (scrollAccumRef.current < -SCROLL_THRESHOLD) {
         scrollAccumRef.current = 0;
-        ragStepRef.current -= 1;
-        setRagStep(ragStepRef.current);
-        lockedUntilRef.current = Date.now() + (ragStepRef.current >= 0 ? LOCK_DURATION : 500);
+        if (ragStepRef.current === RESULT_STEP) {
+          // Back from results to last animated step
+          ragStepRef.current = TOTAL_ANIM_STEPS - 1;
+          setRagStep(ragStepRef.current);
+        } else if (ragStepRef.current >= 0) {
+          ragStepRef.current -= 1;
+          setRagStep(ragStepRef.current);
+          lockedUntilRef.current = Date.now() + (ragStepRef.current >= 0 ? LOCK_DURATION : 500);
+        }
         return;
       }
 
-      // Clamp accumulator
       scrollAccumRef.current = Math.max(-SCROLL_THRESHOLD, Math.min(SCROLL_THRESHOLD, scrollAccumRef.current));
     };
 
@@ -125,8 +145,56 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
     return () => { wheelInterceptRef.current = null; };
   }, [detailOpen]);
 
+  // Start step 0 animation once content is visible
+  useEffect(() => {
+    if (detailContentVisible && detailOpen === 0 && ragStepRef.current === -1) {
+      ragStepRef.current = 0;
+      setRagStep(0);
+      lockedUntilRef.current = Date.now() + 2200;
+    }
+  }, [detailContentVisible, detailOpen]);
+
+  // Website detail: wheel intercept for step-by-step tech reveal
+  useEffect(() => {
+    if (detailOpen !== 1) return;
+
+    webStepRef.current = -1;
+    setWebStep(-1);
+    scrollAccumRef.current = 0;
+
+    const webTechs = ['3Dアニメーション', 'スクロール連動演出', 'マイクロインタラクション'];
+    const SCROLL_THRESHOLD = 120;
+
+    wheelInterceptRef.current = (deltaY: number) => {
+      scrollAccumRef.current += deltaY;
+      if (scrollAccumRef.current > SCROLL_THRESHOLD) {
+        scrollAccumRef.current = 0;
+        if (webStepRef.current < webTechs.length - 1) {
+          webStepRef.current += 1;
+          setWebStep(webStepRef.current);
+        }
+      } else if (scrollAccumRef.current < -SCROLL_THRESHOLD) {
+        scrollAccumRef.current = 0;
+        if (webStepRef.current >= 0) {
+          webStepRef.current -= 1;
+          setWebStep(webStepRef.current);
+        }
+      }
+    };
+
+    return () => { wheelInterceptRef.current = null; };
+  }, [detailOpen]);
+
+  // Start first web step once content visible
+  useEffect(() => {
+    if (detailContentVisible && detailOpen === 1 && webStepRef.current === -1) {
+      webStepRef.current = 0;
+      setWebStep(0);
+    }
+  }, [detailContentVisible, detailOpen]);
+
   const services = [
-    { en: 'RAG', ja: 'RAG開発', desc: 'Retrieval-Augmented Generation（検索拡張生成）を活用した高精度なAIシステムを構築。社内ナレッジの活用や業務効率化を実現します。', color: '#4a7fe0' },
+    { en: 'RAG', ja: 'RAG開発', desc: 'Retrieval-Augmented Generation（検索拡張生成）は、AIが事前学習していない社内文書やナレッジベースの内容でも正確に回答できるようにする技術です。', color: '#4a7fe0' },
     { en: 'WEBSITES', ja: 'Webサイト制作', desc: 'ブランドの世界観を体現する、美しく機能的なWebサイトをデザイン・制作します。', color: '#5fbf96' },
     { en: 'WEB APPS', ja: 'Web開発', desc: 'Next.js・React等のモダン技術で、スケーラブルなWebアプリケーションを開発します。', color: '#9b8ad4' },
   ];
@@ -283,32 +351,13 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
 
             {/* RAG detail */}
             {detailOpen === 0 && (
-              <div ref={ragPanelRef} className="relative">
-                {/* Intro: absolute positioned so How it works stays in layout */}
+              <div ref={ragPanelRef} className="relative" style={{ minHeight: '300px' }}>
+                {/* Step timeline: absolute so it doesn't push results down */}
                 <div style={{
-                  opacity: ragStep < 0 ? 1 : 0,
-                  pointerEvents: ragStep < 0 ? 'auto' : 'none',
-                  position: 'absolute',
+                  position: ragStep === 3 ? 'absolute' : 'relative',
                   top: 0, left: 0, right: 0,
-                  zIndex: ragStep < 0 ? 2 : 0,
-                  transition: 'opacity 0.3s ease',
-                }}>
-                  <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-5" style={{ color: services[0].color }}>About RAG</p>
-                  <h4 className="font-display text-xl text-stone-800 font-bold mb-4">Retrieval-Augmented Generation</h4>
-                  <p className="font-gothic text-[14px] text-stone-700 leading-[2.2] font-light mb-8">
-                    RAG（検索拡張生成）は、AIが事前学習していない社内文書やナレッジベースの内容でも、正確に回答できるようにする技術です。
-                  </p>
-                  <div className="flex items-center gap-2 text-stone-400">
-                    <div className="w-[1px] h-6 overflow-hidden">
-                      <div className="w-full h-full bg-stone-400 scroll-line" />
-                    </div>
-                    <span className="font-gothic text-[10px] tracking-[0.2em] uppercase">Scroll to explore</span>
-                  </div>
-                </div>
-
-                {/* How it works: always in normal flow for accurate dot measurement */}
-                <div style={{
-                  opacity: ragStep >= 0 ? 1 : 0,
+                  opacity: ragStep < 3 ? 1 : 0,
+                  pointerEvents: ragStep < 3 ? 'auto' : 'none',
                   transition: 'opacity 0.3s ease',
                 }}>
                   <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-6" style={{ color: services[0].color }}>How RAG Works</p>
@@ -319,23 +368,87 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
                     <StepTimeline steps={ragSteps} currentStep={ragStep} color="#4a7fe0" />
                   </div>
                 </div>
+
+                {/* Results screen: shown after all steps */}
+                {ragStep === 3 && (
+                  <div>
+                    <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-5" style={{ color: services[0].color }}>Performance</p>
+                    <h4 className="font-display text-xl text-stone-800 font-bold mb-4">国内最高性能のRAGシステム</h4>
+                    <p className="font-gothic text-[14px] text-stone-700 leading-[2.2] font-light">
+                      当社のRAGシステムは国内最高性能を達成。<br />
+                      大手保険会社や大手不動産コンサルティング会社をはじめ、<br />
+                      多くの企業に導入いただいています。
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Websites detail */}
-            {detailOpen === 1 && (
-              <div>
-                <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-8" style={{ color: services[1].color }}>Design Process</p>
-                <div className="space-y-6">
-                  {['ヒアリング・リサーチ', 'ワイヤーフレーム設計', 'ビジュアルデザイン', 'コーディング・実装', 'テスト・公開'].map((step, i) => (
-                    <div key={i} className="flex items-center gap-5">
-                      <span className="font-display text-[28px] font-extrabold leading-none" style={{ color: services[1].color + '25' }}>{String(i + 1).padStart(2, '0')}</span>
-                      <p className="font-gothic text-[14px] text-stone-600 font-light">{step}</p>
+            {detailOpen === 1 && (() => {
+              const webTechs = [
+                { label: '3Dアニメーション', desc: 'Three.jsを活用した没入感のある3D表現' },
+                { label: 'スクロール連動演出', desc: 'スクロールに応じて要素が動的に変化する演出' },
+                { label: 'マイクロインタラクション', desc: 'ホバーやクリックに反応する繊細なアニメーション' },
+              ];
+              return (
+                <div className="flex gap-8 items-center">
+                  {/* Left: tech keywords stacking up */}
+                  <div className="w-1/2 flex-shrink-0">
+                    <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-6" style={{ color: services[1].color }}>Technologies</p>
+                    <div className="space-y-4">
+                      {webTechs.map((tech, i) => (
+                        <div key={i} style={{ opacity: webStep >= i ? 1 : 0, transform: `translateY(${webStep >= i ? 0 : 15}px)`, transition: 'all 0.5s ease' }}>
+                          <h4 className="font-display text-lg text-stone-800 font-bold mb-1">{tech.label}</h4>
+                          <p className="font-gothic text-[12px] text-stone-500 leading-[1.8] font-light">{tech.desc}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                    {webStep >= webTechs.length - 1 && (
+                      <p className="font-gothic text-[14px] text-stone-700 leading-[2] font-light mt-8" style={{ animation: 'fadeIn 0.5s ease' }}>
+                        これらの技術を駆使し、ブランドの世界観を体現するモダンなWebサイトを制作します。
+                      </p>
+                    )}
+                  </div>
+                  {/* Right: interactive demo per step */}
+                  <div className="w-1/2 flex items-center justify-center relative" style={{ height: '350px', perspective: '800px' }}>
+                    {/* Step 0: 3D cube */}
+                    <div className="absolute inset-0 flex items-center justify-center"
+                      style={{ opacity: webStep === 0 ? 1 : 0, transition: 'opacity 0.5s', pointerEvents: webStep === 0 ? 'auto' : 'none' }}>
+                      <div style={{
+                        width: 120, height: 120, position: 'relative',
+                        transformStyle: 'preserve-3d',
+                        animation: 'spin3d 6s linear infinite',
+                      }}>
+                        {[
+                          { transform: 'translateZ(60px)', bg: services[1].color + '15', border: services[1].color + '30' },
+                          { transform: 'rotateY(180deg) translateZ(60px)', bg: services[1].color + '10', border: services[1].color + '20' },
+                          { transform: 'rotateY(90deg) translateZ(60px)', bg: services[1].color + '12', border: services[1].color + '25' },
+                          { transform: 'rotateY(-90deg) translateZ(60px)', bg: services[1].color + '08', border: services[1].color + '20' },
+                          { transform: 'rotateX(90deg) translateZ(60px)', bg: services[1].color + '10', border: services[1].color + '22' },
+                          { transform: 'rotateX(-90deg) translateZ(60px)', bg: services[1].color + '10', border: services[1].color + '22' },
+                        ].map((face, i) => (
+                          <div key={i} className="absolute inset-0 rounded-lg border backdrop-blur-sm"
+                            style={{ transform: face.transform, background: face.bg, borderColor: face.border }} />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Step 1: Scroll-linked mini page demo */}
+                    <div className="absolute inset-0 flex items-center justify-center"
+                      style={{ opacity: webStep === 1 ? 1 : 0, transition: 'opacity 0.5s', pointerEvents: webStep === 1 ? 'auto' : 'none' }}>
+                      <ScrollDemo color={services[1].color} active={webStep === 1} />
+                    </div>
+
+                    {/* Step 2: Micro-interaction live demo */}
+                    <div className="absolute inset-0 flex items-center justify-center"
+                      style={{ opacity: webStep === 2 ? 1 : 0, transition: 'opacity 0.5s', pointerEvents: webStep === 2 ? 'auto' : 'none' }}>
+                      <MicroInteractionDemo color={services[1].color} active={webStep === 2} />
+                    </div>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Web Apps detail */}
             {detailOpen === 2 && (

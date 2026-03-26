@@ -47,6 +47,36 @@ export default function HomePage() {
         }
         .scroll-line { animation: scrollLine 1.5s ease-in-out infinite; }
 
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+          from { transform: translateY(0); }
+          to { transform: translateY(-8px); }
+        }
+
+        @keyframes spin3d {
+          from { transform: rotateX(-20deg) rotateY(0deg); }
+          to { transform: rotateX(-20deg) rotateY(360deg); }
+        }
+
+        @keyframes parallaxFloat {
+          from { transform: translate(-50%, -50%) translateY(0px); }
+          to { transform: translate(-50%, -50%) translateY(-12px); }
+        }
+
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(95,191,150,0.3); }
+          50% { transform: scale(1.03); box-shadow: 0 0 20px 5px rgba(95,191,150,0.15); }
+        }
+
+        @keyframes ripple {
+          0% { transform: translateX(-50%) scale(1); opacity: 0.4; }
+          100% { transform: translateX(-50%) scale(1.8); opacity: 0; }
+        }
+
         .group\/card:hover {
           transform: translateY(-3px) !important;
           box-shadow: 0 8px 30px rgba(0,0,0,0.06);
