@@ -5,6 +5,7 @@ import anime from 'animejs';
 import { wheelInterceptRef } from '../lib/scroll-state';
 import { interp } from '@/lib/animation/interp';
 import { RAGIllustration } from './rag-illustration';
+import { StepTimeline } from './step-timeline';
 
 export function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -14,6 +15,8 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
   const [detailContentVisible, setDetailContentVisible] = useState(false);
   const [ragProgress, setRagProgress] = useState(0);
   const ragProgressRef = useRef(0);
+  const lockedUntilRef = useRef(0); // timestamp when lock expires
+  const lastReachedStepRef = useRef(-1);
 
   // Main scroll progress
   useEffect(() => {
@@ -56,17 +59,43 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
   }, [detailOpen]);
 
   useEffect(() => {
-    if (detailOpen === null) {
+    if (detailOpen !== 0) {
       wheelInterceptRef.current = null;
+      if (detailOpen === null) {
+        ragProgressRef.current = 0;
+        setRagProgress(0);
+      }
       return;
     }
 
     ragProgressRef.current = 0;
     setRagProgress(0);
+    lastReachedStepRef.current = -1;
+    lockedUntilRef.current = 0;
 
     wheelInterceptRef.current = (deltaY: number) => {
-      ragProgressRef.current = Math.max(0, Math.min(1, ragProgressRef.current + deltaY * 0.0008));
-      setRagProgress(ragProgressRef.current);
+      // If locked (SVG animation playing), ignore scroll
+      if (Date.now() < lockedUntilRef.current) return;
+
+      const prev = ragProgressRef.current;
+      const next = Math.max(0, Math.min(1, prev + deltaY * 0.0008));
+
+      // Check if we just crossed a step threshold (forward only)
+      const stepThresholds = [0.08, 0.35, 0.62];
+      for (let i = 0; i < stepThresholds.length; i++) {
+        const threshold = stepThresholds[i] + 0.10; // matches "reached" in StepTimeline
+        if (prev < threshold && next >= threshold && i > lastReachedStepRef.current) {
+          // Snap to threshold and lock for 2s (SVG animation duration)
+          lastReachedStepRef.current = i;
+          ragProgressRef.current = threshold;
+          setRagProgress(threshold);
+          lockedUntilRef.current = Date.now() + 2000;
+          return;
+        }
+      }
+
+      ragProgressRef.current = next;
+      setRagProgress(next);
     };
 
     // Animate RAG panel content when it opens
@@ -275,28 +304,7 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
                     <div className="w-full md:w-5/12">
                       <RAGIllustration steps={ragSteps} progress={ragProgress} stepAppear={stepAppear} />
                     </div>
-                    <div className="w-full md:w-7/12 relative">
-                      <div className="absolute left-[7px] top-0 bottom-0 w-[2px] bg-stone-200/30 rounded-full hidden md:block">
-                        <div className="w-full rounded-full" style={{ height: `${Math.min(Math.max(ragProgress - 0.08, 0) * 150, 100)}%`, background: '#4a7fe0' }} />
-                      </div>
-                      {ragSteps.map((step, i) => {
-                        const appear = interp(ragProgress, stepAppear[i], stepAppear[i] + 0.12, 0, 1);
-                        return (
-                          <div key={step.id} className="flex items-start gap-4 pb-5"
-                            style={{ opacity: appear, transform: `translateY(${(1 - appear) * 20}px)` }}>
-                            <div className="hidden md:flex flex-shrink-0 w-4 h-4 rounded-full border-2 mt-0.5 items-center justify-center relative z-10"
-                              style={{ borderColor: step.color, background: appear > 0.5 ? step.color : 'white', transition: 'background 0.4s' }}>
-                              {appear > 0.5 && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                            </div>
-                            <div>
-                              <span className="font-gothic text-[10px] tracking-[0.2em] uppercase mb-1 block" style={{ color: step.color }}>{step.label}</span>
-                              <h4 className="font-display text-base text-stone-800 font-bold mb-1">{step.title}</h4>
-                              <p className="font-gothic text-[12px] text-stone-600 leading-[1.8] font-light">{step.desc}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
+                    <StepTimeline steps={ragSteps} progress={ragProgress} stepAppear={stepAppear} color="#4a7fe0" />
                   </div>
                   </div>
                 )}
