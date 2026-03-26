@@ -103,7 +103,9 @@ function useSmoothScroll(containerRef: React.RefObject<HTMLDivElement | null>) {
     };
 
     scrollToRef.current = (pos: number) => {
+      current = el.scrollTop;
       target = Math.max(0, Math.min(pos, maxScroll()));
+      console.log('scrollTo', { current, target, pos, maxScroll: maxScroll() });
     };
 
     el.addEventListener('wheel', handleWheel, { passive: false });
@@ -367,6 +369,8 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
   }, [containerRef]);
 
   // When detail is open: intercept wheel → drive ragProgress instead of page scroll
+  const ragPanelRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     if (detailOpen === null) {
       wheelInterceptRef.current = null;
@@ -380,6 +384,23 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
       ragProgressRef.current = Math.max(0, Math.min(1, ragProgressRef.current + deltaY * 0.0008));
       setRagProgress(ragProgressRef.current);
     };
+
+    // Animate case cards when RAG panel opens
+    if (detailOpen === 0) {
+      setTimeout(() => {
+        const panel = ragPanelRef.current;
+        if (panel) {
+          anime({
+            targets: panel.querySelectorAll('.rag-case'),
+            opacity: [0, 1],
+            translateY: [15, 0],
+            delay: anime.stagger(120, { start: 400 }),
+            duration: 600,
+            easing: 'easeOutCubic',
+          });
+        }
+      }, 100);
+    }
 
     return () => { wheelInterceptRef.current = null; };
   }, [detailOpen]);
@@ -412,10 +433,17 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
       color: '#7aa3ed',
       icon: (op: number) => (
         <svg viewBox="0 0 120 80" className="w-full h-full" fill="none">
+          {/* Dots scatter */}
           {[{cx:25,cy:20,d:0},{cx:45,cy:15,d:0.05},{cx:65,cy:25,d:0.1},{cx:85,cy:18,d:0.15},{cx:35,cy:45,d:0.2},{cx:55,cy:40,d:0.25},{cx:75,cy:50,d:0.3},{cx:95,cy:42,d:0.35},{cx:20,cy:65,d:0.4},{cx:45,cy:60,d:0.45}].map((dot, i) => (
             <circle key={i} cx={dot.cx} cy={dot.cy} r={i===5?5:3} fill={i===5?'#7aa3ed':'#7aa3ed40'}
               style={{opacity:interp(op,dot.d,dot.d+0.3,0,1),transform:`scale(${interp(op,dot.d,dot.d+0.3,0,1)})`,transformOrigin:`${dot.cx}px ${dot.cy}px`}}/>
           ))}
+          {/* Connection lines from dots to center (55,40) */}
+          {[{x:25,y:20},{x:45,y:15},{x:65,y:25},{x:35,y:45},{x:75,y:50},{x:45,y:60}].map((pt, i) => (
+            <line key={i} x1="55" y1="40" x2={pt.x} y2={pt.y} stroke="#7aa3ed" strokeWidth="0.8" strokeDasharray="4 3"
+              style={{opacity:interp(op,0.35+i*0.04,0.55+i*0.04,0,0.5)}}/>
+          ))}
+          {/* Magnifier */}
           <circle cx="82" cy="60" r="10" stroke="#7aa3ed" strokeWidth="1.5" style={{strokeDasharray:80,strokeDashoffset:80*(1-interp(op,0.5,0.8,0,1))}}/>
           <line x1="89" y1="67" x2="98" y2="76" stroke="#7aa3ed" strokeWidth="2" strokeLinecap="round" style={{opacity:interp(op,0.6,0.9,0,1)}}/>
         </svg>
@@ -520,37 +548,71 @@ function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLD
           }}>
           <div className="h-full flex flex-col justify-center p-6 lg:p-10">
 
-            {/* RAG: scroll-driven illustration + timeline */}
+            {/* RAG: intro → scroll-driven explanation */}
             {detailOpen === 0 && (
-              <div>
-                <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-6" style={{ color: services[0].color }}>How RAG Works</p>
-                <div className="flex flex-col md:flex-row gap-6 items-start">
-                  {/* Left: auto-play illustration */}
-                  <div className="w-full md:w-5/12">
-                    <RAGIllustration steps={ragSteps} progress={ragProgress} stepAppear={stepAppear} />
+              <div ref={ragPanelRef}>
+                {/* Intro: visible at start, fades out as you scroll */}
+                <div style={{ opacity: interp(ragProgress, 0, 0.08, 1, 0), transform: `translateY(${interp(ragProgress, 0, 0.08, 0, -15)}px)`,
+                  pointerEvents: ragProgress > 0.08 ? 'none' : 'auto', position: ragProgress > 0.12 ? 'absolute' : 'relative' }}>
+                  <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-5" style={{ color: services[0].color }}>About RAG</p>
+                  <h4 className="font-display text-xl text-stone-800 font-bold mb-4">Retrieval-Augmented Generation</h4>
+                  <p className="font-gothic text-[14px] text-stone-700 leading-[2.2] font-light mb-8">
+                    RAG（検索拡張生成）は、AIが事前学習していない社内文書やナレッジベースの内容でも、正確に回答できるようにする技術です。
+                  </p>
+                  <p className="font-gothic text-[10px] tracking-[0.2em] uppercase text-stone-400 mb-4">活用事例</p>
+                  <div className="grid grid-cols-2 gap-3 mb-6">
+                    {[
+                      { icon: '💬', label: '社内FAQ自動応答' },
+                      { icon: '📄', label: '契約書・規程の検索' },
+                      { icon: '📖', label: 'マニュアル参照チャット' },
+                      { icon: '📋', label: '議事録からの情報抽出' },
+                    ].map((item, i) => (
+                      <div key={i} className="rag-case flex items-center gap-3 px-4 py-3 rounded-xl border opacity-0"
+                        style={{ borderColor: services[0].color + '20', background: services[0].color + '06' }}>
+                        <span className="text-lg">{item.icon}</span>
+                        <span className="font-gothic text-[12px] text-stone-700">{item.label}</span>
+                      </div>
+                    ))}
                   </div>
-                  {/* Right: scroll-driven timeline */}
-                  <div className="w-full md:w-7/12 relative">
-                    <div className="absolute left-[7px] top-0 bottom-0 w-[2px] bg-stone-200/30 rounded-full hidden md:block">
-                      <div className="w-full rounded-full" style={{ height: `${Math.min(ragProgress * 130, 100)}%`, background: '#7aa3ed' }} />
+                  <div className="flex items-center gap-2 text-stone-400">
+                    <div className="w-[1px] h-6 overflow-hidden">
+                      <div className="w-full h-full bg-stone-400 scroll-line" />
                     </div>
-                    {ragSteps.map((step, i) => {
-                      const appear = interp(ragProgress, stepAppear[i], stepAppear[i] + 0.12, 0, 1);
-                      return (
-                        <div key={step.id} className="flex items-start gap-4 pb-5"
-                          style={{ opacity: appear, transform: `translateY(${(1 - appear) * 20}px)` }}>
-                          <div className="hidden md:flex flex-shrink-0 w-4 h-4 rounded-full border-2 mt-0.5 items-center justify-center relative z-10"
-                            style={{ borderColor: step.color, background: appear > 0.5 ? step.color : 'white', transition: 'background 0.4s' }}>
-                            {appear > 0.5 && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    <span className="font-gothic text-[10px] tracking-[0.2em] uppercase">Scroll to explore</span>
+                  </div>
+                </div>
+
+                {/* How it works: appears as you scroll */}
+                <div style={{ opacity: interp(ragProgress, 0.08, 0.15, 0, 1), transform: `translateY(${interp(ragProgress, 0.08, 0.15, 20, 0)}px)` }}>
+                  <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-6" style={{ color: services[0].color }}>How RAG Works</p>
+                  <div className="flex flex-col md:flex-row gap-6 items-center">
+                    {/* Left: auto-play illustration */}
+                    <div className="w-full md:w-5/12">
+                      <RAGIllustration steps={ragSteps} progress={ragProgress} stepAppear={stepAppear} />
+                    </div>
+                    {/* Right: scroll-driven timeline */}
+                    <div className="w-full md:w-7/12 relative">
+                      <div className="absolute left-[7px] top-0 bottom-0 w-[2px] bg-stone-200/30 rounded-full hidden md:block">
+                        <div className="w-full rounded-full" style={{ height: `${Math.min(Math.max(ragProgress - 0.08, 0) * 150, 100)}%`, background: '#7aa3ed' }} />
+                      </div>
+                      {ragSteps.map((step, i) => {
+                        const appear = interp(ragProgress, stepAppear[i], stepAppear[i] + 0.12, 0, 1);
+                        return (
+                          <div key={step.id} className="flex items-start gap-4 pb-5"
+                            style={{ opacity: appear, transform: `translateY(${(1 - appear) * 20}px)` }}>
+                            <div className="hidden md:flex flex-shrink-0 w-4 h-4 rounded-full border-2 mt-0.5 items-center justify-center relative z-10"
+                              style={{ borderColor: step.color, background: appear > 0.5 ? step.color : 'white', transition: 'background 0.4s' }}>
+                              {appear > 0.5 && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                            </div>
+                            <div>
+                              <span className="font-gothic text-[10px] tracking-[0.2em] uppercase mb-1 block" style={{ color: step.color }}>{step.label}</span>
+                              <h4 className="font-display text-base text-stone-800 font-bold mb-1">{step.title}</h4>
+                              <p className="font-gothic text-[12px] text-stone-600 leading-[1.8] font-light">{step.desc}</p>
+                            </div>
                           </div>
-                          <div>
-                            <span className="font-gothic text-[10px] tracking-[0.2em] uppercase mb-1 block" style={{ color: step.color }}>{step.label}</span>
-                            <h4 className="font-display text-base text-stone-800 font-bold mb-1">{step.title}</h4>
-                            <p className="font-gothic text-[12px] text-stone-500 leading-[1.8] font-light">{step.desc}</p>
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
