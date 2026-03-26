@@ -6,8 +6,7 @@ import { wheelInterceptRef } from '../lib/scroll-state';
 import { interp } from '@/lib/animation/interp';
 import { RAGIllustration } from './rag-illustration';
 import { StepTimeline } from './step-timeline';
-import { ScrollDemo } from './scroll-demo';
-import { MicroInteractionDemo } from './micro-interaction-demo';
+import { WebTechScene } from './web-tech-scene';
 
 export function ServicesSection({ containerRef }: { containerRef: React.RefObject<HTMLDivElement | null> }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -163,21 +162,28 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
     scrollAccumRef.current = 0;
 
     const webTechs = ['3Dアニメーション', 'スクロール連動演出', 'マイクロインタラクション'];
-    const SCROLL_THRESHOLD = 120;
+    const SCROLL_THRESHOLD = 400;
+
+    // Step 0→1: cube disassemble + expand = ~2.5s. Step 1→2: content needs to be seen
+    const LOCK_DURATIONS = [3000, 2500, 1000];
 
     wheelInterceptRef.current = (deltaY: number) => {
+      if (Date.now() < lockedUntilRef.current) return;
+
       scrollAccumRef.current += deltaY;
       if (scrollAccumRef.current > SCROLL_THRESHOLD) {
         scrollAccumRef.current = 0;
         if (webStepRef.current < webTechs.length - 1) {
           webStepRef.current += 1;
           setWebStep(webStepRef.current);
+          lockedUntilRef.current = Date.now() + (LOCK_DURATIONS[webStepRef.current] || 2000);
         }
       } else if (scrollAccumRef.current < -SCROLL_THRESHOLD) {
         scrollAccumRef.current = 0;
         if (webStepRef.current >= 0) {
           webStepRef.current -= 1;
           setWebStep(webStepRef.current);
+          lockedUntilRef.current = Date.now() + (LOCK_DURATIONS[webStepRef.current] || 2000);
         }
       }
     };
@@ -190,13 +196,14 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
     if (detailContentVisible && detailOpen === 1 && webStepRef.current === -1) {
       webStepRef.current = 0;
       setWebStep(0);
+      lockedUntilRef.current = Date.now() + 3000; // let 3D cube play for 3s
     }
   }, [detailContentVisible, detailOpen]);
 
   const services = [
     { en: 'RAG', ja: 'RAG開発', desc: 'Retrieval-Augmented Generation（検索拡張生成）は、AIが事前学習していない社内文書やナレッジベースの内容でも正確に回答できるようにする技術です。', color: '#4a7fe0' },
-    { en: 'WEBSITES', ja: 'Webサイト制作', desc: 'ブランドの世界観を体現する、美しく機能的なWebサイトをデザイン・制作します。', color: '#5fbf96' },
-    { en: 'WEB APPS', ja: 'Web開発', desc: 'Next.js・React等のモダン技術で、スケーラブルなWebアプリケーションを開発します。', color: '#9b8ad4' },
+    { en: 'WEB SITE', ja: 'Webサイト制作', desc: 'ブランドの世界観を体現する、美しく機能的なWebサイトをデザイン・制作します。', color: '#5fbf96' },
+    { en: 'WEB APP', ja: 'Web開発', desc: 'Next.js・React等のモダン技術で、スケーラブルなWebアプリケーションを開発します。', color: '#9b8ad4' },
   ];
 
   // RAG scroll-driven steps with SVG icons
@@ -276,8 +283,8 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
       <div className="sticky top-0 h-screen flex overflow-hidden">
 
         {/* Left: WE DEVELOP + descriptions */}
-        <div className="flex flex-col justify-center px-6 lg:px-12 transition-[width] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-          style={{ width: panelExpanded ? '45%' : '100%', flexShrink: 0 }}>
+        <div className="flex flex-col justify-center px-6 lg:px-12 overflow-hidden transition-[width] duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+          style={{ width: panelExpanded ? '50%' : '100%', flexShrink: 0 }}>
 
           <div className="flex items-baseline gap-[1.2em] whitespace-nowrap overflow-hidden">
             <span className="font-display text-[clamp(1.8rem,4vw,3.5rem)] font-extrabold text-stone-800 leading-none">
@@ -341,12 +348,12 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
 
         {/* Right: Detail panel — no width animation, opacity only */}
         <div style={{
-            width: panelExpanded ? '55%' : '0%',
+            width: panelExpanded ? '50%' : '0%',
             height: '100vh',
             overflow: 'hidden',
             transition: 'width 0.7s cubic-bezier(0.22,1,0.36,1)',
           }}>
-          <div style={{ width: '55vw', height: '100vh', display: 'grid', alignContent: 'center', padding: '40px', overflowY: 'auto', opacity: detailContentVisible ? 1 : 0, transition: 'opacity 0.4s ease' }}>
+          <div style={{ width: '50vw', height: '100vh', display: 'grid', alignContent: 'center', padding: '40px', overflowY: 'auto', opacity: detailContentVisible ? 1 : 0, transition: 'opacity 0.4s ease' }}>
             <div>
 
             {/* RAG detail */}
@@ -410,41 +417,9 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
                       </p>
                     )}
                   </div>
-                  {/* Right: interactive demo per step */}
-                  <div className="w-1/2 flex items-center justify-center relative" style={{ height: '350px', perspective: '800px' }}>
-                    {/* Step 0: 3D cube */}
-                    <div className="absolute inset-0 flex items-center justify-center"
-                      style={{ opacity: webStep === 0 ? 1 : 0, transition: 'opacity 0.5s', pointerEvents: webStep === 0 ? 'auto' : 'none' }}>
-                      <div style={{
-                        width: 120, height: 120, position: 'relative',
-                        transformStyle: 'preserve-3d',
-                        animation: 'spin3d 6s linear infinite',
-                      }}>
-                        {[
-                          { transform: 'translateZ(60px)', bg: services[1].color + '15', border: services[1].color + '30' },
-                          { transform: 'rotateY(180deg) translateZ(60px)', bg: services[1].color + '10', border: services[1].color + '20' },
-                          { transform: 'rotateY(90deg) translateZ(60px)', bg: services[1].color + '12', border: services[1].color + '25' },
-                          { transform: 'rotateY(-90deg) translateZ(60px)', bg: services[1].color + '08', border: services[1].color + '20' },
-                          { transform: 'rotateX(90deg) translateZ(60px)', bg: services[1].color + '10', border: services[1].color + '22' },
-                          { transform: 'rotateX(-90deg) translateZ(60px)', bg: services[1].color + '10', border: services[1].color + '22' },
-                        ].map((face, i) => (
-                          <div key={i} className="absolute inset-0 rounded-lg border backdrop-blur-sm"
-                            style={{ transform: face.transform, background: face.bg, borderColor: face.border }} />
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Step 1: Scroll-linked mini page demo */}
-                    <div className="absolute inset-0 flex items-center justify-center"
-                      style={{ opacity: webStep === 1 ? 1 : 0, transition: 'opacity 0.5s', pointerEvents: webStep === 1 ? 'auto' : 'none' }}>
-                      <ScrollDemo color={services[1].color} active={webStep === 1} />
-                    </div>
-
-                    {/* Step 2: Micro-interaction live demo */}
-                    <div className="absolute inset-0 flex items-center justify-center"
-                      style={{ opacity: webStep === 2 ? 1 : 0, transition: 'opacity 0.5s', pointerEvents: webStep === 2 ? 'auto' : 'none' }}>
-                      <MicroInteractionDemo color={services[1].color} active={webStep === 2} />
-                    </div>
+                  {/* Right: cumulative tech scene */}
+                  <div className="w-1/2" style={{ height: '350px' }}>
+                    <WebTechScene step={webStep} color={services[1].color} />
                   </div>
                 </div>
               );

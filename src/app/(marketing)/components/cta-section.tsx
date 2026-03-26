@@ -90,14 +90,11 @@ export function CtaSection({ containerRef }: { containerRef: React.RefObject<HTM
       {/* Form */}
       {showForm && (
         <div className="max-w-[780px] w-full mx-auto relative z-10 transition-all duration-500 rounded-3xl px-8 py-10 md:px-12 md:py-12"
-          style={{ opacity: formReady ? 1 : 0, transform: formReady ? 'translateY(0)' : 'translateY(30px)', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(20px) saturate(1.4)', WebkitBackdropFilter: 'blur(20px) saturate(1.4)', boxShadow: '0 8px 32px rgba(0,0,0,0.08)' }}>
+          style={{ opacity: formReady ? 1 : 0, transform: formReady ? 'translateY(0)' : 'translateY(30px)', background: 'rgba(255,255,255,0.25)', backdropFilter: 'blur(20px) saturate(1.4)', WebkitBackdropFilter: 'blur(20px) saturate(1.4)', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
           {!submitted ? (
             <>
               <div className="text-center mb-6">
-                <h3 className="font-gothic text-xl text-stone-800 font-light mb-1">お問い合わせ</h3>
-                <p className="font-gothic text-[12px] text-stone-400 font-light">
-                  お気軽にどうぞ。
-                </p>
+                <h3 className="font-gothic text-xl text-stone-800 font-light">お問い合わせ</h3>
               </div>
               <form onSubmit={handleSubmit}>
                 <label className="block mb-4">

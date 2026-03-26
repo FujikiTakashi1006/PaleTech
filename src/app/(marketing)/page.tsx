@@ -77,6 +77,22 @@ export default function HomePage() {
           100% { transform: translateX(-50%) scale(1.8); opacity: 0; }
         }
 
+        @keyframes scrollFloat {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-6px); }
+        }
+
+        @keyframes cardReveal {
+          0%, 30% { opacity: 0; transform: translateY(8px); }
+          40%, 80% { opacity: 1; transform: translateY(0); }
+          90%, 100% { opacity: 0; transform: translateY(-4px); }
+        }
+
+        @keyframes sliderMove {
+          0% { width: 25%; }
+          100% { width: 75%; }
+        }
+
         .group\/card:hover {
           transform: translateY(-3px) !important;
           box-shadow: 0 8px 30px rgba(0,0,0,0.06);

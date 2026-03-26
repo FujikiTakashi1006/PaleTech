@@ -1,20 +1,18 @@
 'use client';
 
-import { useRef, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import anime from 'animejs';
 
 export function ScrollDemo({ color, active }: { color: string; active: boolean }) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const [scrollY, setScrollY] = useState(0);
 
-  // Auto-scroll animation
   useEffect(() => {
     if (!active) return;
     const obj = { val: 0 };
     const anim = anime({
       targets: obj,
       val: [0, 1, 0],
-      duration: 6000,
+      duration: 4000,
       easing: 'easeInOutSine',
       loop: true,
       update: () => setScrollY(obj.val),
@@ -22,60 +20,79 @@ export function ScrollDemo({ color, active }: { color: string; active: boolean }
     return () => anim.pause();
   }, [active]);
 
+  const p = scrollY; // 0→1
+
   return (
-    <div className="relative rounded-xl border overflow-hidden" style={{ width: 220, height: 300, borderColor: color + '20', background: 'white' }}>
-      {/* Scroll indicator */}
-      <div className="absolute right-1 top-8 bottom-8 w-1 rounded-full z-10" style={{ background: color + '10' }}>
-        <div className="w-full rounded-full" style={{ height: '30%', background: color + '40', transform: `translateY(${scrollY * 230}%)`, transition: 'transform 0.1s' }} />
-      </div>
+    <div className="relative rounded-xl overflow-hidden" style={{ width: 240, height: 320, background: '#fafaf9', border: `1.5px solid ${color}20` }}>
+      {/* Scroll progress bar top */}
+      <div className="absolute top-0 left-0 h-[2px] z-20" style={{ width: `${p * 100}%`, background: color, transition: 'width 0.05s' }} />
 
-      {/* Content that moves with scroll */}
-      <div style={{ transform: `translateY(${-scrollY * 180}px)`, transition: 'transform 0.1s linear' }}>
-        {/* Hero section */}
-        <div className="p-5 pb-3">
-          <div className="w-12 h-1.5 rounded mb-4" style={{ background: color + '30' }} />
-          <div className="w-3/4 h-3 rounded mb-2" style={{ background: color + '20', transform: `translateX(${-scrollY * 20}px)`, transition: 'transform 0.15s' }} />
-          <div className="w-1/2 h-3 rounded mb-5" style={{ background: color + '15', transform: `translateX(${-scrollY * 30}px)`, transition: 'transform 0.2s' }} />
-          {/* Parallax image placeholder */}
-          <div className="w-full h-20 rounded-lg mb-3" style={{
-            background: `linear-gradient(135deg, ${color}12, ${color}06)`,
-            transform: `translateY(${scrollY * 15}px) scale(${1 + scrollY * 0.05})`,
-            transition: 'transform 0.15s',
-          }} />
-        </div>
+      {/* --- Content --- */}
+      <div className="relative h-full overflow-hidden">
 
-        {/* Cards that reveal on scroll */}
-        {[0, 1, 2].map(i => (
-          <div key={i} className="mx-5 mb-3 p-3 rounded-lg border" style={{
-            borderColor: color + '12',
-            opacity: scrollY > 0.15 + i * 0.2 ? 1 : 0,
-            transform: `translateY(${scrollY > 0.15 + i * 0.2 ? 0 : 20}px)`,
-            transition: 'all 0.4s ease',
-          }}>
-            <div className="flex gap-2 items-center mb-2">
-              <div className="w-5 h-5 rounded-full" style={{ background: color + '15' }} />
-              <div className="w-16 h-1.5 rounded" style={{ background: color + '12' }} />
-            </div>
-            <div className="w-full h-1 rounded mb-1" style={{ background: color + '08' }} />
-            <div className="w-3/4 h-1 rounded" style={{ background: color + '06' }} />
-          </div>
-        ))}
-
-        {/* Bottom CTA that fades in */}
-        <div className="mx-5 mt-2 flex justify-center" style={{
-          opacity: scrollY > 0.7 ? 1 : 0,
-          transform: `scale(${scrollY > 0.7 ? 1 : 0.9})`,
-          transition: 'all 0.5s ease',
+        {/* Hero image — parallax (moves slower than scroll) */}
+        <div className="absolute w-full" style={{
+          height: 140,
+          top: -p * 40,
+          background: `linear-gradient(135deg, ${color}30, ${color}10)`,
+          transition: 'top 0.1s',
         }}>
-          <div className="px-6 py-2 rounded-full" style={{ background: color + '15' }}>
-            <div className="w-12 h-1.5 rounded" style={{ background: color + '30' }} />
+          <div className="absolute bottom-4 left-5">
+            <div className="w-24 h-3 rounded mb-2" style={{ background: 'white', opacity: 0.9 }} />
+            <div className="w-16 h-2 rounded" style={{ background: 'white', opacity: 0.5 }} />
           </div>
         </div>
-      </div>
 
-      {/* Scroll label */}
-      <div className="absolute bottom-2 left-0 right-0 text-center">
-        <span className="font-gothic text-[8px] tracking-wider uppercase" style={{ color: color + '50' }}>auto-scrolling</span>
+        {/* Cards — stagger reveal from bottom */}
+        {[0, 1, 2].map(i => {
+          const threshold = 0.2 + i * 0.2;
+          const cardP = Math.max(0, Math.min(1, (p - threshold) / 0.15));
+          return (
+            <div key={i} className="absolute left-4 right-4 rounded-lg border p-3"
+              style={{
+                top: 150 + i * 58 - p * 50,
+                borderColor: cardP > 0 ? color + '25' : 'rgba(0,0,0,0.04)',
+                background: cardP > 0 ? 'white' : 'rgba(255,255,255,0.5)',
+                opacity: cardP,
+                transform: `translateY(${(1 - cardP) * 30}px) scale(${0.95 + cardP * 0.05})`,
+                transition: 'border-color 0.3s, background 0.3s',
+                boxShadow: cardP > 0.5 ? `0 2px 12px ${color}10` : 'none',
+              }}>
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="w-6 h-6 rounded-full" style={{ background: color + (20 + i * 10).toString(16) }} />
+                <div>
+                  <div className="w-16 h-2 rounded mb-1" style={{ background: color + '20' }} />
+                  <div className="w-10 h-1.5 rounded" style={{ background: color + '10' }} />
+                </div>
+              </div>
+              <div className="w-full h-1.5 rounded mb-1" style={{ background: color + '10' }} />
+              <div className="w-3/4 h-1.5 rounded" style={{ background: color + '08' }} />
+            </div>
+          );
+        })}
+
+        {/* Floating CTA — scale bounce at end */}
+        <div className="absolute left-4 right-4 bottom-3 flex justify-center" style={{
+          opacity: p > 0.75 ? 1 : 0,
+          transform: `translateY(${p > 0.75 ? 0 : 20}px) scale(${p > 0.75 ? 1 : 0.8})`,
+          transition: 'all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        }}>
+          <div className="px-8 py-2 rounded-full" style={{ background: color }}>
+            <span className="font-gothic text-[9px] text-white tracking-wider">GET STARTED</span>
+          </div>
+        </div>
+
+        {/* Parallax decorative circles */}
+        <div className="absolute rounded-full" style={{
+          width: 60, height: 60, right: -10, top: 80 - p * 30,
+          background: color + '08', border: `1px solid ${color}15`,
+          transition: 'top 0.1s',
+        }} />
+        <div className="absolute rounded-full" style={{
+          width: 30, height: 30, left: 10, top: 200 - p * 50,
+          background: color + '06', border: `1px solid ${color}10`,
+          transition: 'top 0.1s',
+        }} />
       </div>
     </div>
   );
