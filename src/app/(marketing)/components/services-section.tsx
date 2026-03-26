@@ -13,10 +13,10 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
   const [detailOpen, setDetailOpen] = useState<number | null>(null);
   const [panelExpanded, setPanelExpanded] = useState(false);
   const [detailContentVisible, setDetailContentVisible] = useState(false);
-  const [ragProgress, setRagProgress] = useState(0);
-  const ragProgressRef = useRef(0);
-  const lockedUntilRef = useRef(0); // timestamp when lock expires
-  const lastReachedStepRef = useRef(-1);
+  const [ragStep, setRagStep] = useState(-1); // -1=intro, 0=step1, 1=step2, 2=step3
+  const ragStepRef = useRef(-1);
+  const lockedUntilRef = useRef(0);
+  const scrollAccumRef = useRef(0);
 
   // Main scroll progress
   useEffect(() => {
@@ -41,7 +41,7 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
     return () => container.removeEventListener('scroll', update);
   }, [containerRef]);
 
-  // When detail is open: intercept wheel → drive ragProgress instead of page scroll
+  // When detail is open: intercept wheel → drive ragStep instead of page scroll
   const ragPanelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,40 +62,47 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
     if (detailOpen !== 0) {
       wheelInterceptRef.current = null;
       if (detailOpen === null) {
-        ragProgressRef.current = 0;
-        setRagProgress(0);
+        ragStepRef.current = -1;
+        setRagStep(-1);
       }
       return;
     }
 
-    ragProgressRef.current = 0;
-    setRagProgress(0);
-    lastReachedStepRef.current = -1;
+    ragStepRef.current = -1;
+    setRagStep(-1);
     lockedUntilRef.current = 0;
+    scrollAccumRef.current = 0;
+
+    const TOTAL_STEPS = 3; // step 0, 1, 2
+    const SCROLL_THRESHOLD = 150; // px of scroll to trigger next step
+    const LOCK_DURATION = 2200; // ms to wait for SVG animation
 
     wheelInterceptRef.current = (deltaY: number) => {
       // If locked (SVG animation playing), ignore scroll
       if (Date.now() < lockedUntilRef.current) return;
 
-      const prev = ragProgressRef.current;
-      const next = Math.max(0, Math.min(1, prev + deltaY * 0.0008));
+      scrollAccumRef.current += deltaY;
 
-      // Check if we just crossed a step threshold (forward only)
-      const stepThresholds = [0.08, 0.35, 0.62];
-      for (let i = 0; i < stepThresholds.length; i++) {
-        const threshold = stepThresholds[i] + 0.10; // matches "reached" in StepTimeline
-        if (prev < threshold && next >= threshold && i > lastReachedStepRef.current) {
-          // Snap to threshold and lock for 2s (SVG animation duration)
-          lastReachedStepRef.current = i;
-          ragProgressRef.current = threshold;
-          setRagProgress(threshold);
-          lockedUntilRef.current = Date.now() + 2000;
-          return;
-        }
+      // Forward: next step
+      if (scrollAccumRef.current > SCROLL_THRESHOLD && ragStepRef.current < TOTAL_STEPS - 1) {
+        scrollAccumRef.current = 0;
+        ragStepRef.current += 1;
+        setRagStep(ragStepRef.current);
+        lockedUntilRef.current = Date.now() + LOCK_DURATION;
+        return;
       }
 
-      ragProgressRef.current = next;
-      setRagProgress(next);
+      // Backward: previous step
+      if (scrollAccumRef.current < -SCROLL_THRESHOLD && ragStepRef.current >= 0) {
+        scrollAccumRef.current = 0;
+        ragStepRef.current -= 1;
+        setRagStep(ragStepRef.current);
+        lockedUntilRef.current = Date.now() + (ragStepRef.current >= 0 ? LOCK_DURATION : 500);
+        return;
+      }
+
+      // Clamp accumulator
+      scrollAccumRef.current = Math.max(-SCROLL_THRESHOLD, Math.min(SCROLL_THRESHOLD, scrollAccumRef.current));
     };
 
     // Animate RAG panel content when it opens
@@ -185,7 +192,7 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
           <rect x="5" y="4" width="110" height="72" rx="10" stroke="#4a7fe0" strokeWidth="1.5" style={{strokeDasharray:400,strokeDashoffset:400*(1-interp(op,0,0.25,0,1))}}/>
           <circle cx="16" cy="16" r="3" fill="#4a7fe0" style={{opacity:interp(op,0.1,0.3,0,1)}}/>
           <text x="22" y="18" fill="#4a7fe0" fontSize="6" fontFamily="monospace" fontWeight="bold" style={{opacity:interp(op,0.1,0.3,0,1)}}>AI</text>
-          {[{y:35,w:80,d:0.2},{y:47,w:80,d:0.45},{y:59,w:80,d:0.7}].map((line,i)=>{
+          {[{y:28,w:80,d:0.2},{y:40,w:80,d:0.45},{y:52,w:80,d:0.7}].map((line,i)=>{
             const lo=interp(op,line.d,line.d+0.15,0,1);
             return(<line key={i} x1="16" y1={line.y} x2={16+line.w*lo} y2={line.y} stroke="#4a7fe0" strokeWidth="2" strokeLinecap="round" style={{opacity:lo*0.7}}/>);
           })}
@@ -193,8 +200,6 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
       ),
     },
   ];
-  const stepAppear = [0.08, 0.35, 0.62];
-
   const svcStart = 0.1;
   const seg = (1 - svcStart) / services.length;
 
@@ -278,36 +283,42 @@ export function ServicesSection({ containerRef }: { containerRef: React.RefObjec
 
             {/* RAG detail */}
             {detailOpen === 0 && (
-              <div ref={ragPanelRef}>
-                {/* Intro: shown until scroll starts */}
-                {ragProgress < 0.12 && (
-                  <div style={{ opacity: interp(ragProgress, 0, 0.08, 1, 0) }}>
-                    <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-5" style={{ color: services[0].color }}>About RAG</p>
-                    <h4 className="font-display text-xl text-stone-800 font-bold mb-4">Retrieval-Augmented Generation</h4>
-                    <p className="font-gothic text-[14px] text-stone-700 leading-[2.2] font-light mb-8">
-                      RAG（検索拡張生成）は、AIが事前学習していない社内文書やナレッジベースの内容でも、正確に回答できるようにする技術です。
-                    </p>
-                    <div className="flex items-center gap-2 text-stone-400">
-                      <div className="w-[1px] h-6 overflow-hidden">
-                        <div className="w-full h-full bg-stone-400 scroll-line" />
-                      </div>
-                      <span className="font-gothic text-[10px] tracking-[0.2em] uppercase">Scroll to explore</span>
+              <div ref={ragPanelRef} className="relative">
+                {/* Intro: absolute positioned so How it works stays in layout */}
+                <div style={{
+                  opacity: ragStep < 0 ? 1 : 0,
+                  pointerEvents: ragStep < 0 ? 'auto' : 'none',
+                  position: 'absolute',
+                  top: 0, left: 0, right: 0,
+                  zIndex: ragStep < 0 ? 2 : 0,
+                  transition: 'opacity 0.3s ease',
+                }}>
+                  <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-5" style={{ color: services[0].color }}>About RAG</p>
+                  <h4 className="font-display text-xl text-stone-800 font-bold mb-4">Retrieval-Augmented Generation</h4>
+                  <p className="font-gothic text-[14px] text-stone-700 leading-[2.2] font-light mb-8">
+                    RAG（検索拡張生成）は、AIが事前学習していない社内文書やナレッジベースの内容でも、正確に回答できるようにする技術です。
+                  </p>
+                  <div className="flex items-center gap-2 text-stone-400">
+                    <div className="w-[1px] h-6 overflow-hidden">
+                      <div className="w-full h-full bg-stone-400 scroll-line" />
                     </div>
+                    <span className="font-gothic text-[10px] tracking-[0.2em] uppercase">Scroll to explore</span>
                   </div>
-                )}
+                </div>
 
-                {/* How it works: shown after scroll */}
-                {ragProgress >= 0.08 && (
-                  <div style={{ opacity: interp(ragProgress, 0.08, 0.15, 0, 1) }}>
+                {/* How it works: always in normal flow for accurate dot measurement */}
+                <div style={{
+                  opacity: ragStep >= 0 ? 1 : 0,
+                  transition: 'opacity 0.3s ease',
+                }}>
                   <p className="font-gothic text-[11px] tracking-[0.3em] uppercase mb-6" style={{ color: services[0].color }}>How RAG Works</p>
                   <div className="flex flex-col md:flex-row gap-6 items-center">
                     <div className="w-full md:w-5/12">
-                      <RAGIllustration steps={ragSteps} progress={ragProgress} stepAppear={stepAppear} />
+                      <RAGIllustration steps={ragSteps} progress={ragStep} />
                     </div>
-                    <StepTimeline steps={ragSteps} progress={ragProgress} stepAppear={stepAppear} color="#4a7fe0" />
+                    <StepTimeline steps={ragSteps} currentStep={ragStep} color="#4a7fe0" />
                   </div>
-                  </div>
-                )}
+                </div>
               </div>
             )}
 
